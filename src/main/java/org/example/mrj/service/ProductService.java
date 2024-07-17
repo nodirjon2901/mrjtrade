@@ -17,11 +17,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductService {
 
-    private final ProductRepository productRepository;
-
-    private final ObjectMapper objectMapper;
-
-    private final PhotoService photoService;
+//    private final ProductRepository productRepository;
+//
+//    private final ObjectMapper objectMapper;
+//
+//    private final PhotoService photoService;
 
 
 

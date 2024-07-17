@@ -25,7 +25,7 @@ public class Product extends BaseEntity{
     @Column(length = 1000)
     String description;
 
-    Map<String, String> characteristic;
+//    Map<String, String> characteristic;
 
     @Column(unique = true)
     String slug;
