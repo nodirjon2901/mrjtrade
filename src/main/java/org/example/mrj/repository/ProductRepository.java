@@ -26,4 +26,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Optional<Product> findBySlug(String slug);
 
+    @Query(value = "SELECT c.slug FROM catalog c JOIN product p ON c.id = p.catalog_id WHERE p.slug = :productSlug", nativeQuery = true)
+    String findCatalogSlugByProductSlug(@Param("productSlug") String productSlug);
+
 }

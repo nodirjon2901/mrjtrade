@@ -3,8 +3,11 @@ package org.example.mrj.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.dto.CatalogDTO;
+import org.example.mrj.domain.dto.ProductDTO;
 import org.example.mrj.domain.entity.Catalog;
+import org.example.mrj.domain.entity.Product;
 import org.example.mrj.service.CatalogService;
+import org.example.mrj.service.ProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +19,8 @@ import java.util.List;
 public class CatalogController {
 
     private final CatalogService catalogService;
+
+    private final ProductService productService;
 
     @PostMapping("/create/{categoryId}")
     public ResponseEntity<ApiResponse<CatalogDTO>> create(
@@ -59,5 +64,11 @@ public class CatalogController {
         return catalogService.changeActive(id);
     }
 
+    @GetMapping("/products/{slug}")
+    public ResponseEntity<ApiResponse<List<ProductDTO>>> getAllProductBySlug(
+            @PathVariable String slug
+    ) {
+        return productService.findAllByCatalogSlug(slug);
+    }
 
 }
