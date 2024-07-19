@@ -15,9 +15,10 @@ import lombok.experimental.FieldDefaults;
 @Entity(name = "navbar_option")
 public class NavbarOption extends BaseEntity {
 
-    String name;
+    String title;
 
     @Column(unique = true)
     String slug;
 
+    boolean active;
 }

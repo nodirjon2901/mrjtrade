@@ -30,10 +30,9 @@ public class NavbarController {
 
     @PutMapping("/update")
     public ResponseEntity<ApiResponse<Navbar>> update(
-            @RequestParam(value = "json", required = false) String navbar,
-            @RequestPart(value = "photo", required = false) MultipartFile photo
-    ) {
-        return navbarService.update(navbar, photo);
+            @RequestBody Navbar navbar) {
+        System.err.println("navbar = " + navbar);
+        return navbarService.update(navbar);
     }
 
     @DeleteMapping("/delete")
