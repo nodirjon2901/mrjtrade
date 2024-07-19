@@ -146,7 +146,7 @@ public class PhotoService
             photo.setName(originalFileName);
             photo.setFilePath(uploadDir.getAbsolutePath());
             photo.setType(file.getContentType());
-            photo.setHttpUrl("http://localhost:8080/photo/" + photo.getName());
+            photo.setHttpUrl(baseUrl + "/photo/" + photo.getName());
 
             response.setMessage("Updated");
             response.setData(new PhotoDTO(photoRepository.save(photo)));
