@@ -84,9 +84,10 @@ public class NavbarService
                 {
                     if (option.getId() != null && fromDbOption.getId().equals(option.getId()))
                     {
-                        fromDbOption.setActive(option.isActive());
-                        fromDbOption.setSlug(option.getSlug());
-                        fromDbOption.setTitle(option.getTitle());
+                        if (option.getActive() != null)
+                            fromDbOption.setActive(option.getActive());
+                        if (option.getTitle() != null)
+                            fromDbOption.setTitle(option.getTitle());
                     }
                 }
             }
@@ -97,8 +98,8 @@ public class NavbarService
         {
             fromDb.setPhone(newNavbar.getPhone());
         }
-        navbarRepository.save(fromDb);
         response.setMessage("Updated");
+        response.setData(navbarRepository.save(fromDb));
         return ResponseEntity.status(201).body(response);
     }
 /*
