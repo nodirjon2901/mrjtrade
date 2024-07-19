@@ -21,5 +21,5 @@ public class NavbarOption extends BaseEntity
     @Column(unique = true, updatable = false)
     String slug;
 
-    boolean active;
+    Boolean active;
 }
