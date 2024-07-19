@@ -7,6 +7,7 @@ import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.entity.Navbar;
 import org.example.mrj.domain.entity.Photo;
 import org.example.mrj.repository.NavbarRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,8 +29,8 @@ public class NavbarService {
         ApiResponse<Navbar> response = new ApiResponse<>();
         Optional<Navbar> firstNavbarOptional = navbarRepository.findAll().stream().findFirst();
         if (firstNavbarOptional.isPresent()) {
-//            return update(strNavbar, photoFile);
-            return null;
+            response.setMessage("Navbar already exists");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
         try {
             Navbar navbar = objectMapper.readValue(strNavbar, Navbar.class);
