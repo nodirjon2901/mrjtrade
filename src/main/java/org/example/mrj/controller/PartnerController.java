@@ -2,7 +2,10 @@ package org.example.mrj.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.mrj.domain.dto.ApiResponse;
+import org.example.mrj.domain.dto.PartnerDTO;
 import org.example.mrj.domain.entity.Partner;
+import org.example.mrj.domain.entity.PartnerHeader;
+import org.example.mrj.service.PartnerHeaderService;
 import org.example.mrj.service.PartnerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +19,8 @@ import java.util.List;
 public class PartnerController {
 
     private final PartnerService partnerService;
+
+    private final PartnerHeaderService partnerHeaderService;
 
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<Partner>> createPartner(
@@ -33,8 +38,20 @@ public class PartnerController {
     }
 
     @GetMapping("/get-all")
-    public ResponseEntity<ApiResponse<List<Partner>>> findAll(){
+    public ResponseEntity<ApiResponse<List<Partner>>> findAll() {
         return partnerService.findAll();
+    }
+
+    @GetMapping("/get-all-partner")
+    public ResponseEntity<ApiResponse<List<PartnerDTO>>> findAllForMenuPage() {
+        return partnerService.findSixPartnerForMainPage();
+    }
+
+    @GetMapping("/get-others/{partnerSlug}")
+    public ResponseEntity<ApiResponse<List<Partner>>> findOtherPartner(
+            @PathVariable String partnerSlug
+    ) {
+        return partnerService.findOtherPartnerBySlug(partnerSlug);
     }
 
     @PutMapping("/update/{id}")
@@ -49,15 +66,39 @@ public class PartnerController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<ApiResponse<?>> delete(
             @PathVariable Long id
-    ){
+    ) {
         return partnerService.deleteById(id);
     }
 
     @PutMapping("/change-active/{id}")
     public ResponseEntity<ApiResponse<?>> changeActive(
             @PathVariable Long id
-    ){
+    ) {
         return partnerService.changeActive(id);
+    }
+
+    @PostMapping("/header/create")
+    public ResponseEntity<ApiResponse<PartnerHeader>> createHeader(
+            @RequestBody PartnerHeader header
+    ) {
+        return partnerHeaderService.create(header);
+    }
+
+    @GetMapping("/header/get")
+    public ResponseEntity<ApiResponse<PartnerHeader>> findHeader() {
+        return partnerHeaderService.find();
+    }
+
+    @PutMapping("/header/update")
+    public ResponseEntity<ApiResponse<PartnerHeader>> updateHeader(
+            @RequestBody PartnerHeader partnerHeader
+    ) {
+        return partnerHeaderService.update(partnerHeader);
+    }
+
+    @DeleteMapping("/header/delete")
+    public ResponseEntity<ApiResponse<?>> deleteHeader() {
+        return partnerHeaderService.delete();
     }
 
 }

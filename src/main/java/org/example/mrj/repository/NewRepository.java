@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -15,7 +16,7 @@ public interface NewRepository extends JpaRepository<New, Long> {
 
     @Modifying
     @Query(value = "update news set active=:active where id=:id", nativeQuery = true)
-    void changeActive(@Param("id")Long id, boolean active);
+    void changeActive(@Param("id") Long id, boolean active);
 
     @Modifying
     @Query(value = "update news set slug = :slug where id = :id", nativeQuery = true)
@@ -27,5 +28,8 @@ public interface NewRepository extends JpaRepository<New, Long> {
 
     @Query(value = "select * from news where slug = :slug", nativeQuery = true)
     Optional<New> findBySlug(@Param("slug") String slug);
+
+    @Query(value = "select * from news order by id asc", nativeQuery = true)
+    List<New> findAllByOrderByIdAsc();
 
 }

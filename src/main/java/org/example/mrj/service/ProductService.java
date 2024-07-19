@@ -9,6 +9,7 @@ import org.example.mrj.domain.dto.ProductDTO;
 import org.example.mrj.domain.dto.ProductForListDTO;
 import org.example.mrj.domain.entity.Catalog;
 import org.example.mrj.domain.entity.Product;
+import org.example.mrj.domain.entity.ProductCharacteristic;
 import org.example.mrj.repository.CatalogRepository;
 import org.example.mrj.repository.ProductRepository;
 import org.example.mrj.util.SlugUtil;
@@ -45,10 +46,12 @@ public class ProductService {
         }
         try {
             Product product = objectMapper.readValue(json, Product.class);
+            product.getCharacteristic().forEach(characteristic -> characteristic.setProduct(product));
             product.setMainPhotoUrl(photoService.save(mainPhotoFile).getHttpUrl());
             product.setActive(true);
             product.setSalePrice(product.getPrice()-(product.getPrice())*product.getSale()*0.01);
             product.setCatalog(optionalCatalog.get());
+            product.getCharacteristic().forEach(characteristic -> characteristic.setProduct(product));
             product.setPhotoUrls(new ArrayList<>());
             for (MultipartFile photo : photoFiles) {
                 product.getPhotoUrls().add(photoService.save(photo).getHttpUrl());
@@ -161,25 +164,35 @@ public class ProductService {
         boolean active = oldProduct.isActive();
         String slug = oldProduct.getSlug();
 
-        Product newProduct = new Product();
+        Product newProduct;
         try {
             if (newJson != null) {
                 newProduct = objectMapper.readValue(newJson, Product.class);
                 newProduct.setId(id);
                 newProduct.setActive(active);
                 newProduct.setSlug(slug);
-                newProduct.setSalePrice(newProduct.getPrice()-(newProduct.getPrice()*newProduct.getSale()*0.01));
+                newProduct.setSalePrice(newProduct.getPrice() - (newProduct.getPrice() * newProduct.getSale() * 0.01));
+                newProduct.setCatalog(oldProduct.getCatalog());
+
+                // Eski characteristiclarni olib tashlash
+                oldProduct.getCharacteristic().clear();
+                productRepository.save(oldProduct);
+
+                // Yangi characteristiclarni bog'lash
+                for (ProductCharacteristic characteristic : newProduct.getCharacteristic()) {
+                    characteristic.setProduct(newProduct);
+                }
             } else {
                 newProduct = oldProduct;
             }
 
-            if (oldMainPhotoUrl == null || oldMainPhotoUrl.isEmpty()) {
+            if (newPhoto == null || newPhoto.isEmpty()) {
                 newProduct.setMainPhotoUrl(oldMainPhotoUrl);
             } else {
                 newProduct.setMainPhotoUrl(photoService.save(newPhoto).getHttpUrl());
             }
 
-            if (oldPhotoUrls == null || oldPhotoUrls.isEmpty()) {
+            if (newPhotoList == null || newPhotoList.isEmpty()) {
                 newProduct.setPhotoUrls(oldPhotoUrls);
             } else {
                 newProduct.setPhotoUrls(new ArrayList<>());
@@ -187,6 +200,7 @@ public class ProductService {
                     newProduct.getPhotoUrls().add(photoService.save(photo).getHttpUrl());
                 }
             }
+
             Product save = productRepository.save(newProduct);
             response.setData(save);
             return ResponseEntity.status(201).body(response);
@@ -195,6 +209,7 @@ public class ProductService {
             return ResponseEntity.status(401).body(response);
         }
     }
+
 
     public ResponseEntity<ApiResponse<?>> changeActive(Long id) {
         ApiResponse<?> response = new ApiResponse<>();

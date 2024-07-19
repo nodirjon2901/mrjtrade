@@ -5,9 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.mrj.domain.dto.ApiResponse;
+import org.example.mrj.domain.dto.NewDTO;
 import org.example.mrj.domain.entity.New;
 import org.example.mrj.repository.NewRepository;
 import org.example.mrj.util.SlugUtil;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,12 +31,13 @@ public class NewService {
 
     private final ObjectMapper objectMapper;
 
-    public ResponseEntity<ApiResponse<New>> create(String strNew, List<MultipartFile> photoFiles) {
+    public ResponseEntity<ApiResponse<New>> create(String strNew, MultipartFile mainPhoto, List<MultipartFile> photoFiles) {
         ApiResponse<New> response = new ApiResponse<>();
         try {
             New newness = objectMapper.readValue(strNew, New.class);
             newness.setPhotoUrls(new ArrayList<>());
             newness.setActive(true);
+            newness.setMainPhotoUrl(photoService.save(mainPhoto).getHttpUrl());
             for (MultipartFile photo : photoFiles) {
                 newness.getPhotoUrls().add(photoService.save(photo).getHttpUrl());
             }
@@ -74,16 +79,45 @@ public class NewService {
         return ResponseEntity.status(200).body(response);
     }
 
-    public ResponseEntity<ApiResponse<List<New>>> findAll() {
-        ApiResponse<List<New>> response = new ApiResponse<>();
+    public ResponseEntity<ApiResponse<List<NewDTO>>> findAll() {
+        ApiResponse<List<NewDTO>> response = new ApiResponse<>();
         List<New> all = newRepository.findAll();
         response.setData(new ArrayList<>());
-        all.forEach(newness -> response.getData().add(newness));
+        all.forEach(newness -> response.getData().add(new NewDTO(newness)));
         response.setMessage("Found " + all.size() + " new(s)");
         return ResponseEntity.status(200).body(response);
     }
 
-    public ResponseEntity<ApiResponse<New>> update(Long id, String newJson, List<MultipartFile> newPhotosFile) {
+    public ResponseEntity<ApiResponse<Page<NewDTO>>> findAllByPageNation(int page, int size) {
+        ApiResponse<Page<NewDTO>> response = new ApiResponse<>();
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<New> all = newRepository.findAll(pageable);
+        Page<NewDTO> map = all.map(NewDTO::new);
+        response.setData(map);
+        return ResponseEntity.status(200).body(response);
+    }
+
+    public ResponseEntity<ApiResponse<List<NewDTO>>> findFourNews() {
+        ApiResponse<List<NewDTO>> response = new ApiResponse<>();
+        List<New> all = newRepository.findAllByOrderByIdAsc();
+        response.setData(new ArrayList<>());
+        all.stream().limit(4).toList().forEach(newness -> response.getData().add(new NewDTO(newness)));
+        return ResponseEntity.status(200).body(response);
+    }
+
+    public ResponseEntity<ApiResponse<List<NewDTO>>> findOtherFourNews(String newSlug) {
+        ApiResponse<List<NewDTO>> response = new ApiResponse<>();
+        List<New> all = newRepository.findAllByOrderByIdAsc();
+        response.setData(new ArrayList<>());
+        all.stream()
+                .filter(newness -> !newness.getSlug().equals(newSlug))
+                .limit(4).toList()
+                .forEach(newness -> response.getData().add(new NewDTO(newness)));
+        return ResponseEntity.status(200).body(response);
+    }
+
+
+    public ResponseEntity<ApiResponse<New>> update(Long id, String newJson, MultipartFile newMainPhoto, List<MultipartFile> newPhotosFile) {
         ApiResponse<New> response = new ApiResponse<>();
         Optional<New> optionalNew = newRepository.findById(id);
         if (optionalNew.isEmpty()) {
@@ -91,6 +125,7 @@ public class NewService {
             return ResponseEntity.status(404).body(response);
         }
         List<String> oldPhotoUrls = optionalNew.get().getPhotoUrls();
+        String oldMainPhotoUrl = optionalNew.get().getMainPhotoUrl();
         boolean active = optionalNew.get().isActive();
         String slug = newRepository.findSlugById(id);
         New newness = new New();
@@ -98,21 +133,27 @@ public class NewService {
         try {
             if (newJson != null) {
                 newness = objectMapper.readValue(newJson, New.class);
-                if (newPhotosFile == null || newPhotosFile.isEmpty()) {
-                    newness.setPhotoUrls(oldPhotoUrls);
-                }
                 newness.setId(id);
                 newness.setSlug(slug);
                 newness.setActive(active);
             } else {
                 newness = newRepository.findById(id).get();
             }
-            if (newPhotosFile != null && !newPhotosFile.isEmpty()) {
+
+            if (newMainPhoto == null || newMainPhoto.isEmpty()) {
+                newness.setMainPhotoUrl(oldMainPhotoUrl);
+            } else {
+                newness.setMainPhotoUrl(photoService.save(newMainPhoto).getHttpUrl());
+            }
+            if (newPhotosFile == null || newPhotosFile.isEmpty()) {
+                newness.setPhotoUrls(oldPhotoUrls);
+            } else {
                 newness.setPhotoUrls(new ArrayList<>());
                 for (MultipartFile photo : newPhotosFile) {
                     newness.getPhotoUrls().add(photoService.save(photo).getHttpUrl());
                 }
             }
+
             New save = newRepository.save(newness);
             response.setData(save);
             return ResponseEntity.status(201).body(response);

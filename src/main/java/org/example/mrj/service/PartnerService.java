@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.mrj.domain.dto.ApiResponse;
+import org.example.mrj.domain.dto.PartnerDTO;
 import org.example.mrj.domain.entity.Partner;
 import org.example.mrj.domain.entity.Photo;
 import org.example.mrj.repository.PartnerRepository;
@@ -78,6 +79,27 @@ public class PartnerService {
         List<Partner> all = partnerRepository.findAll();
         all.forEach(partner -> response.getData().add(partner));
         response.setMessage("Found " + all.size() + " partner(s)");
+        return ResponseEntity.status(200).body(response);
+    }
+
+    public ResponseEntity<ApiResponse<List<PartnerDTO>>> findSixPartnerForMainPage() {
+        ApiResponse<List<PartnerDTO>> response = new ApiResponse<>();
+        response.setData(new ArrayList<>());
+        List<Partner> all = partnerRepository.findAllByOrderByIdAsc();
+        all.stream()
+                .filter(Partner::isActive)
+                .limit(6).toList()
+                .forEach(partner -> response.getData().add(new PartnerDTO(partner)));
+        return ResponseEntity.status(200).body(response);
+    }
+
+    public ResponseEntity<ApiResponse<List<Partner>>> findOtherPartnerBySlug(String partnerSlug) {
+        ApiResponse<List<Partner>> response = new ApiResponse<>();
+        response.setData(new ArrayList<>());
+        List<Partner> all = partnerRepository.findAllByOrderByIdAsc();
+        all.stream()
+                .filter(partner -> partner.isActive() && !partner.getSlug().equals(partnerSlug)).toList()
+                .forEach(partner -> response.getData().add(partner));
         return ResponseEntity.status(200).body(response);
     }
 

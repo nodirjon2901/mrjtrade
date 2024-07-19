@@ -1,6 +1,5 @@
 package org.example.mrj.domain.entity;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -8,29 +7,27 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import java.util.List;
-
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Entity(name = "news")
-public class New extends BaseEntity{
+@Entity(name = "representative")
+public class Representative extends BaseEntity{
 
-    String title;
+    String name;
 
-    @Column(length = 5000)
-    String body;
+    String address;
 
-    String date;
+    String country;
 
-    String mainPhotoUrl;
+    String schedule;
 
-    List<String> photoUrls;
+    String email;
 
-    @Column(unique = true)
-    String slug;
+    String phone;
 
     boolean active;
+
+    
 
 }

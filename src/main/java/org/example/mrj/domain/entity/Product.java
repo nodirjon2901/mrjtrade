@@ -1,6 +1,5 @@
 package org.example.mrj.domain.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -10,7 +9,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -27,11 +25,8 @@ public class Product extends BaseEntity {
     @Column(length = 1000)
     String description;
 
-    @ElementCollection
-    @CollectionTable(name = "product_characteristics", joinColumns = @JoinColumn(name = "product_id"))
-    @MapKeyColumn(name = "characteristic_key")
-    @Column(name = "characteristic_value",length = 1000)
-    Map<String, String> characteristic;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<ProductCharacteristic> characteristic;
 
     @Column(unique = true)
     String slug;

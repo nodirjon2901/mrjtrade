@@ -2,8 +2,10 @@ package org.example.mrj.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.mrj.domain.dto.ApiResponse;
+import org.example.mrj.domain.dto.NewDTO;
 import org.example.mrj.domain.entity.New;
 import org.example.mrj.service.NewService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,9 +22,10 @@ public class NewController {
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<New>> createNew(
             @RequestParam(value = "json") String newness,
+            @RequestPart(value = "mainPhoto") MultipartFile mainPhoto,
             @RequestPart(value = "photos") List<MultipartFile> photos
     ) {
-        return newService.create(newness, photos);
+        return newService.create(newness, mainPhoto, photos);
     }
 
     @GetMapping("/get/{slug}")
@@ -33,17 +36,38 @@ public class NewController {
     }
 
     @GetMapping("/get-all")
-    public ResponseEntity<ApiResponse<List<New>>> findAll() {
+    public ResponseEntity<ApiResponse<List<NewDTO>>> findAll() {
         return newService.findAll();
+    }
+
+    @GetMapping("/get-page")
+    public ResponseEntity<ApiResponse<Page<NewDTO>>> findAllByPageNation(
+            @RequestParam(value = "page") Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = "12") Integer size
+    ) {
+        return newService.findAllByPageNation(page, size);
+    }
+
+    @GetMapping("/get-all-other/{newSlug}")
+    public ResponseEntity<ApiResponse<List<NewDTO>>> findOtherFourNews(
+            @PathVariable String newSlug
+    ) {
+        return newService.findOtherFourNews(newSlug);
+    }
+
+    @GetMapping("/get-four")
+    public ResponseEntity<ApiResponse<List<NewDTO>>> findFourNews() {
+        return newService.findFourNews();
     }
 
     @PutMapping("/update/{id}")
     public ResponseEntity<ApiResponse<New>> update(
             @PathVariable Long id,
             @RequestParam(value = "json") String newness,
+            @RequestPart(value = "mainPhoto") MultipartFile mainPhoto,
             @RequestPart(value = "photos") List<MultipartFile> photos
     ) {
-        return newService.update(id, newness, photos);
+        return newService.update(id, newness, mainPhoto, photos);
     }
 
     @PutMapping("/change-active/{id}")
