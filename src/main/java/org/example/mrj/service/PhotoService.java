@@ -1,6 +1,8 @@
 package org.example.mrj.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.mrj.domain.dto.ApiResponse;
+import org.example.mrj.domain.dto.PhotoDTO;
 import org.example.mrj.domain.entity.Photo;
 import org.example.mrj.exception.IllegalPhotoTypeException;
 import org.example.mrj.exception.PhotoNotFoundException;
@@ -19,30 +21,39 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class PhotoService {
+public class PhotoService
+{
 
     @Value("${photo.upload.path}")
     private String photoUploadPath;
 
+    @Value("${server.base-url}")
+    private String baseUrl;
+
     private final PhotoRepository photoRepository;
 
-    public Photo save(MultipartFile file) {
+    public Photo save(MultipartFile file)
+    {
         if (file.getContentType() != null && !(file.getContentType().equals("image/png") ||
                 file.getContentType().equals("image/svg+xml") ||
-                file.getContentType().equals("image/jpeg"))) {
+                file.getContentType().equals("image/jpeg")))
+        {
             throw new IllegalPhotoTypeException("Unsupported image type: " + file.getContentType());
         }
 
-        try {
+        try
+        {
             Photo photo = photoRepository.save(new Photo());
             String originalFileName = photo.getId() + "-" + Objects.requireNonNull(file.getOriginalFilename()).replaceAll(" ", "%20");
 
             Path filePath = Paths.get(photoUploadPath + File.separator + originalFileName);
             File uploadDir = new File(filePath.toUri());
-            if (!uploadDir.exists()) {
+            if (!uploadDir.exists())
+            {
                 uploadDir.mkdirs();
             }
             file.transferTo(uploadDir);
@@ -50,10 +61,11 @@ public class PhotoService {
             photo.setName(originalFileName);
             photo.setFilePath(uploadDir.getAbsolutePath());
             photo.setType(file.getContentType());
-            photo.setHttpUrl("http://localhost:8080/photo/" + photo.getName());
+            photo.setHttpUrl(baseUrl + "/photo/" + photo.getName());
 
             return photoRepository.save(photo);
-        } catch (IOException e) {
+        } catch (IOException e)
+        {
             throw new RuntimeException(e);
         }
     }
@@ -76,14 +88,18 @@ public class PhotoService {
             Path imagePath = Paths.get(photo.getFilePath());
             byte[] imageBytes = Files.readAllBytes(imagePath);
 
-            switch (photo.getType()) {
-                case "image/png" -> {
+            switch (photo.getType())
+            {
+                case "image/png" ->
+                {
                     return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(imageBytes);
                 }
-                case "image/jpeg" -> {
+                case "image/jpeg" ->
+                {
                     return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(imageBytes);
                 }
-                case "image/svg+xml" -> {
+                case "image/svg+xml" ->
+                {
                     HttpHeaders headers = new HttpHeaders();
                     headers.add(HttpHeaders.CONTENT_TYPE, "image/svg+xml");
 
@@ -97,6 +113,49 @@ public class PhotoService {
             throw new PhotoNotFoundException(e.getMessage());
         }
         return null;
+    }
+
+    public ResponseEntity<ApiResponse<PhotoDTO>> update(Long id, MultipartFile file)
+    {
+        ApiResponse<PhotoDTO> response = new ApiResponse<>();
+        Optional<Photo> byId = photoRepository.findById(id);
+        if (byId.isEmpty())
+            throw new PhotoNotFoundException("Photo not found with id: " + id);
+
+        if (file.getContentType() != null && !(file.getContentType().equals("image/png") ||
+                file.getContentType().equals("image/svg+xml") ||
+                file.getContentType().equals("image/jpeg")))
+        {
+            throw new IllegalPhotoTypeException("Unsupported image type: " + file.getContentType() + " , Support only image/png or image/svg+xml or image/jpeg");
+        }
+
+        try
+        {
+            Photo photo = new Photo();
+            photo.setId(id);
+
+            String originalFileName = photo.getId() + "-" + Objects.requireNonNull(file.getOriginalFilename()).replaceAll(" ", "%20");
+
+            Path filePath = Paths.get(photoUploadPath + File.separator + originalFileName);
+            File uploadDir = new File(filePath.toUri());
+            if (!uploadDir.exists())
+                uploadDir.mkdirs();
+
+            file.transferTo(uploadDir);
+
+            photo.setName(originalFileName);
+            photo.setFilePath(uploadDir.getAbsolutePath());
+            photo.setType(file.getContentType());
+            photo.setHttpUrl("http://localhost:8080/photo/" + photo.getName());
+
+            response.setMessage("Updated");
+            response.setData(new PhotoDTO(photoRepository.save(photo)));
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
     }
 
 }

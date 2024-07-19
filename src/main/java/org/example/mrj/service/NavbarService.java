@@ -28,12 +28,12 @@ public class NavbarService {
         ApiResponse<Navbar> response = new ApiResponse<>();
         Optional<Navbar> firstNavbarOptional = navbarRepository.findAll().stream().findFirst();
         if (firstNavbarOptional.isPresent()) {
-            return update(strNavbar, photoFile);
+//            return update(strNavbar, photoFile);
+            return null;
         }
         try {
             Navbar navbar = objectMapper.readValue(strNavbar, Navbar.class);
-            Photo photo = photoService.save(photoFile);
-            navbar.setPhotoUrl(photo.getHttpUrl());
+            navbar.setLogo(photoService.save(photoFile));
             Navbar save = navbarRepository.save(navbar);
             response.setData(save);
             return ResponseEntity.status(201).body(response);
@@ -56,7 +56,22 @@ public class NavbarService {
         return ResponseEntity.status(200).body(response);
     }
 
-
+    public ResponseEntity<ApiResponse<Navbar>> update(Navbar navbar)
+    {
+        ApiResponse<Navbar> response = new ApiResponse<>();
+        Optional<Navbar> optionalNavbarOptional = navbarRepository.findAll().stream().findFirst();
+        if (optionalNavbarOptional.isPresent()) {
+            navbar.setId(optionalNavbarOptional.get().getId());
+            navbar.setLogo(optionalNavbarOptional.get().getLogo());
+            navbarRepository.save(navbar);
+            response.setMessage("Updated");
+            response.setData(navbar);
+            return ResponseEntity.status(200).body(response);
+        }
+        response.setMessage("Navbar is not found");
+        return ResponseEntity.status(404).body(response);
+    }
+/*
     public ResponseEntity<ApiResponse<Navbar>> update(String newJson, MultipartFile newPhoto) {
         ApiResponse<Navbar> response = new ApiResponse<>();
         Optional<Navbar> optionalNavbar = navbarRepository.findAll().stream().findFirst();
@@ -65,14 +80,14 @@ public class NavbarService {
             return ResponseEntity.status(404).body(response);
         }
         Long id = optionalNavbar.get().getId();
-        String oldPhotoUrl = navbarRepository.findPhotoUrlById(id);
+        Photo oldPhoto = optionalNavbar.get().getPhoto();
         Navbar newNavbar = new Navbar();
 
         try {
             if (newJson != null) {
                 newNavbar = objectMapper.readValue(newJson, Navbar.class);
                 if (newPhoto == null || !(newPhoto.getSize() > 0)) {
-                    newNavbar.setPhotoUrl(oldPhotoUrl);
+                    newNavbar.setPhoto(oldPhoto);
                 }
                 newNavbar.setId(id);
             } else {
@@ -80,8 +95,7 @@ public class NavbarService {
             }
 
             if (newPhoto != null && newPhoto.getSize() > 0) {
-                Photo photo = photoService.save(newPhoto);
-                newNavbar.setPhotoUrl(photo.getHttpUrl());
+                newNavbar.setPhoto(photoService.save(newPhoto));
             }
             Navbar save = navbarRepository.save(newNavbar);
             response.setData(save);
@@ -91,6 +105,7 @@ public class NavbarService {
             return ResponseEntity.status(409).body(response);
         }
     }
+*/
 
     public ResponseEntity<ApiResponse<?>> delete() {
         ApiResponse<?> response = new ApiResponse<>();
