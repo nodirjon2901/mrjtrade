@@ -31,7 +31,6 @@ public class NavbarController {
     @PutMapping("/update")
     public ResponseEntity<ApiResponse<Navbar>> update(
             @RequestBody Navbar navbar) {
-        System.err.println("navbar = " + navbar);
         return navbarService.update(navbar);
     }
 

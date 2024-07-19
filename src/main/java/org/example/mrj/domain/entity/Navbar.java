@@ -22,7 +22,7 @@ public class Navbar extends BaseEntity
 {
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)//On creating Navbar , front not send "logo":{...} as json data , instead of that send MultipartFile , but we send Navbar to front need "logo":{ "id":id,"url":"http://..."} data . LOGO NOT CREATE WITH JSON DATA!
     Photo logo;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
