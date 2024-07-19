@@ -26,7 +26,7 @@ public class Navbar extends BaseEntity
     Photo logo;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    List<NavbarOption> option;
+    List<NavbarOption> options;
 
     String phone;
 }

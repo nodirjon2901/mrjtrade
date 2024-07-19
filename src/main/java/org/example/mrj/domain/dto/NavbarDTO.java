@@ -24,6 +24,6 @@ public class NavbarDTO
     {
         this.id = entity.getId();
         this.logo = new PhotoDTO(entity.getLogo());
-        this.option = entity.getOption();
+        this.option = entity.getOptions();
     }
 }
