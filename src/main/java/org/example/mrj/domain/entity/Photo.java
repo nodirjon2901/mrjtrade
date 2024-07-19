@@ -1,5 +1,7 @@
 package org.example.mrj.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -14,12 +16,16 @@ import lombok.experimental.FieldDefaults;
 @Entity(name = "photo")
 public class Photo extends BaseEntity {
 
+    @JsonIgnore
     String name;
 
+    @JsonIgnore
     String filePath;
 
+    @JsonProperty(value = "url")
     String httpUrl;
 
+    @JsonIgnore
     String type;
 
     public Photo(String name, String filePath, String httpUrl) {
