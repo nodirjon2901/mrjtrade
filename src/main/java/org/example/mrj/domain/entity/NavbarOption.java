@@ -13,11 +13,12 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity(name = "navbar_option")
-public class NavbarOption extends BaseEntity {
+public class NavbarOption extends BaseEntity
+{
 
     String title;
 
-    @Column(unique = true)
+    @Column(unique = true, updatable = false)
     String slug;
 
     boolean active;
