@@ -29,10 +29,11 @@ public class NavbarService {
         Optional<Navbar> firstNavbarOptional = navbarRepository.findAll().stream().findFirst();
         if (firstNavbarOptional.isPresent()) {
 //            return update(strNavbar, photoFile);
+            return null;
         }
         try {
             Navbar navbar = objectMapper.readValue(strNavbar, Navbar.class);
-            navbar.setPhoto(photoService.save(photoFile));
+            navbar.setLogo(photoService.save(photoFile));
             Navbar save = navbarRepository.save(navbar);
             response.setData(save);
             return ResponseEntity.status(201).body(response);
@@ -61,7 +62,7 @@ public class NavbarService {
         Optional<Navbar> optionalNavbarOptional = navbarRepository.findAll().stream().findFirst();
         if (optionalNavbarOptional.isPresent()) {
             navbar.setId(optionalNavbarOptional.get().getId());
-            navbar.setPhoto(optionalNavbarOptional.get().getPhoto());
+            navbar.setLogo(optionalNavbarOptional.get().getLogo());
             navbarRepository.save(navbar);
             response.setMessage("Updated");
             response.setData(navbar);
