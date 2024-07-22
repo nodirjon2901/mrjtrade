@@ -91,6 +91,8 @@ public class NavbarService
                 }
             }
         }*/
+        fromDb.setOptions(null);
+        navbarRepository.save(fromDb);
         fromDb.setOptions(newNavbar.getOptions());
 
         // Phone
