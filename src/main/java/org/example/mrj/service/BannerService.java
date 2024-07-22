@@ -33,15 +33,15 @@ public class BannerService
         if (all.isEmpty())
         {
             Banner banner = new Banner();
-            banner.setSlider(new ArrayList<>());
-            banner.getSlider().add(new BannerSlider(link, photoService.save(photo)));
+            banner.setSliders(new ArrayList<>());
+            banner.getSliders().add(new BannerSlider(link, photoService.save(photo)));
             bannerRepository.save(banner);
             response.setData(banner);
             response.setMessage("Created first banner successfully");
             return ResponseEntity.ok(response);
         }
         Banner banner = all.get(0);
-        banner.getSlider().add(new BannerSlider(link, photoService.save(photo)));
+        banner.getSliders().add(new BannerSlider(link, photoService.save(photo)));
         bannerRepository.save(banner);
         response.setData(banner);
         response.setMessage("Added slider (photo)");
@@ -83,8 +83,8 @@ public class BannerService
             return ResponseEntity.status(404).body(response);
         }
         Banner fromDb = all.get(0);
-        List<BannerSlider> oldSlider = fromDb.getSlider();
-        List<BannerSlider> newSlider = newBanner.getSlider();
+        List<BannerSlider> oldSlider = fromDb.getSliders();
+        List<BannerSlider> newSlider = newBanner.getSliders();
 
         // Step 1 : Find which field are non-null from newBanner. Non-null field are must have changed
         // Step 2 : Find non-null field of newBanner from oldBanner
