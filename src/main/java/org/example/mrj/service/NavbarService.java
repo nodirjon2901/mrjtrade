@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +29,7 @@ public class NavbarService
     private final ObjectMapper objectMapper;
 
     private final NavbarOptionRepository optionRepository;
+    private final NavbarOptionRepository navbarOptionRepository;
 
     public ResponseEntity<ApiResponse<Navbar>> create(String strNavbar, MultipartFile photoFile)
     {
@@ -62,8 +64,13 @@ public class NavbarService
             return ResponseEntity.status(404).body(response);
         }
         Navbar navbar = all.get(0);
-        navbar.setOptions(null);
-        navbar.setOptions(optionRepository.findAll());
+        navbar.setOptions(new ArrayList<>());
+        List<Long> optionsId = navbarRepository.getOptionsId();
+
+        for (Long id : optionsId)
+        {
+            navbar.getOptions().add(navbarOptionRepository.findById(id).get());
+        }
         response.setMessage("Found");
         response.setData(navbar);
         return ResponseEntity.status(200).body(response);
