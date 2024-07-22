@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface BannerRepository extends JpaRepository<Banner, Long> {
 
@@ -18,4 +20,6 @@ public interface BannerRepository extends JpaRepository<Banner, Long> {
     @Query(value = "update banner set active=:active where id=:id", nativeQuery = true)
     void changeActive(@Param("id")Long id, boolean active);
 
+    @Query(value = "select sliders_id  from banner_sliders", nativeQuery = true)
+    List<Long> getSlidersId();
 }

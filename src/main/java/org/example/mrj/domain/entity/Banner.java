@@ -21,9 +21,9 @@ import java.util.List;
 public class Banner extends BaseEntity
 {
     @Column(updatable = false)
-    boolean addable = false;
+    boolean addable = true;
 
     @JsonProperty(value = "data")
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL)
     List<BannerSlider> sliders;
 }

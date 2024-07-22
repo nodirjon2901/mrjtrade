@@ -3,10 +3,12 @@ package org.example.mrj.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.example.mrj.domain.BannerWrapper;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.entity.Banner;
 import org.example.mrj.domain.entity.BannerSlider;
 import org.example.mrj.repository.BannerRepository;
+import org.example.mrj.repository.BannerSliderRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,32 +27,33 @@ public class BannerService
     private final PhotoService photoService;
 
     private final ObjectMapper objectMapper;
+    private final BannerSliderRepository sliderRepo;
 
-    public ResponseEntity<ApiResponse<Banner>> addSlider(String link, MultipartFile photo)
+    public ResponseEntity<ApiResponse<BannerWrapper>> addSlider(String link, Boolean active, MultipartFile photo)
     {
-        ApiResponse<Banner> response = new ApiResponse<>();
+        ApiResponse<BannerWrapper> response = new ApiResponse<>();
         List<Banner> all = bannerRepository.findAll();
         if (all.isEmpty())
         {
             Banner banner = new Banner();
             banner.setSliders(new ArrayList<>());
-            banner.getSliders().add(new BannerSlider(link, photoService.save(photo)));
+            banner.getSliders().add(new BannerSlider(link, active, photoService.save(photo)));
             bannerRepository.save(banner);
-            response.setData(banner);
+            response.setData(new BannerWrapper(banner));
             response.setMessage("Created first banner successfully");
             return ResponseEntity.ok(response);
         }
         Banner banner = all.get(0);
-        banner.getSliders().add(new BannerSlider(link, photoService.save(photo)));
+        banner.getSliders().add(new BannerSlider(link, active, photoService.save(photo)));
         bannerRepository.save(banner);
-        response.setData(banner);
+        response.setData(new BannerWrapper(banner));
         response.setMessage("Added slider (photo)");
         return ResponseEntity.ok(response);
     }
 
-    public ResponseEntity<ApiResponse<Banner>> get()
+    public ResponseEntity<ApiResponse<BannerWrapper>> get()
     {
-        ApiResponse<Banner> response = new ApiResponse<>();
+        ApiResponse<BannerWrapper> response = new ApiResponse<>();
         List<Banner> all = bannerRepository.findAll();
         if (all.isEmpty())
         {
@@ -58,24 +61,16 @@ public class BannerService
             return ResponseEntity.status(404).body(response);
         }
         Banner banner = all.get(0);
-        response.setData(banner);
+        List<BannerSlider> sliderList = sliderRepo.findAllById(bannerRepository.getSlidersId());
+        banner.setSliders(sliderList);
+        response.setData(new BannerWrapper(banner));
         response.setMessage("Found");
         return ResponseEntity.status(200).body(response);
     }
 
-    public ResponseEntity<ApiResponse<List<Banner>>> findAll()
+    public ResponseEntity<ApiResponse<BannerWrapper>> update(Banner newBanner)
     {
-        ApiResponse<List<Banner>> response = new ApiResponse<>();
-        response.setData(new ArrayList<>());
-        List<Banner> all = bannerRepository.findAll();
-        all.forEach(banner -> response.getData().add(banner));
-        response.setMessage("Found " + all.size() + " banner(s)");
-        return ResponseEntity.status(200).body(response);
-    }
-
-    public ResponseEntity<ApiResponse<Banner>> update(Banner newBanner)
-    {
-        ApiResponse<Banner> response = new ApiResponse<>();
+        ApiResponse<BannerWrapper> response = new ApiResponse<>();
         List<Banner> all = bannerRepository.findAll();
         if (all.isEmpty())
         {
@@ -83,10 +78,9 @@ public class BannerService
             return ResponseEntity.status(404).body(response);
         }
         Banner fromDb = all.get(0);
-        List<BannerSlider> oldSlider = fromDb.getSliders();
-        List<BannerSlider> newSlider = newBanner.getSliders();
+        fromDb.setSliders(newBanner.getSliders());
 
-        // Step 1 : Find which field are non-null from newBanner. Non-null field are must have changed
+/*        // Step 1 : Find which field are non-null from newBanner. Non-null field are must have changed
         // Step 2 : Find non-null field of newBanner from oldBanner
         // Step 3 : Replace oldBanner fields with non-null fields of newBanner
 
@@ -97,9 +91,9 @@ public class BannerService
                 if (i.getLink() != null) replaceLink(oldSlider, i.getId(), i.getLink());
                 if (i.getActive() != null) replaceActive(oldSlider, i.getId(), i.getActive());
             }
-        }
+        }*/
 
-        response.setData(bannerRepository.save(fromDb));
+        response.setData(new BannerWrapper(bannerRepository.save(fromDb)));
         response.setMessage("Updated");
         return ResponseEntity.status(200).body(response);
     }
@@ -116,34 +110,18 @@ public class BannerService
             if (i.getId().equals(to)) i.setLink(value);
     }
 
-    public ResponseEntity<ApiResponse<?>> deleteById(Long id)
+    public ResponseEntity<ApiResponse<?>> delete()
     {
         ApiResponse<?> response = new ApiResponse<>();
-        if (bannerRepository.findById(id).isEmpty())
+        List<Banner> all = bannerRepository.findAll();
+        if (all.isEmpty())
         {
-            response.setMessage("Banner is not found by id: " + id);
+            response.setMessage("Banner is null , not created yet. You can't delete");
             return ResponseEntity.status(404).body(response);
         }
-        bannerRepository.deleteById(id);
+        bannerRepository.deleteById(all.get(0).getId());
         response.setMessage("Successfully deleted!");
         return ResponseEntity.status(200).body(response);
-    }
-
-    public ResponseEntity<ApiResponse<?>> changeActive(Long id)
-    {
-        return null;
- /*       ApiResponse<?> response = new ApiResponse<>();
-        Optional<Banner> optionalBanner = bannerRepository.findById(id);
-        if (optionalBanner.isEmpty())
-        {
-            response.setMessage("Banner is not found by id: " + id);
-            return ResponseEntity.status(404).body(response);
-        }
-        Banner banner = optionalBanner.get();
-        boolean active = !banner.isActive();
-        bannerRepository.changeActive(id, active);
-        response.setMessage("Successfully changed! Current banner active: " + active);
-        return ResponseEntity.status(200).body(response);*/
     }
 
 }
