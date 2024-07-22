@@ -99,10 +99,12 @@ public class BannerService
             if (newSlider.getId() != null)
             {
                 newSlider.setPhoto(photoRepository.findByIdOrName(newSlider.getPhoto().getId(), null));
+                sliderRepo.save(newSlider);
             }
         }
 
         fromDb.setSliders(newBanner.getSliders());
+        bannerRepository.save(fromDb);
 
 /*        // Step 1 : Find which field are non-null from newBanner. Non-null field are must have changed
         // Step 2 : Find non-null field of newBanner from oldBanner
