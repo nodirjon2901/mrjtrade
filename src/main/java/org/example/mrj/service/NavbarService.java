@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.entity.Navbar;
+import org.example.mrj.repository.NavbarOptionRepository;
 import org.example.mrj.repository.NavbarRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,8 @@ public class NavbarService
     private final PhotoService photoService;
 
     private final ObjectMapper objectMapper;
+
+    private final NavbarOptionRepository optionRepository;
 
     public ResponseEntity<ApiResponse<Navbar>> create(String strNavbar, MultipartFile photoFile)
     {
@@ -52,13 +55,15 @@ public class NavbarService
     public ResponseEntity<ApiResponse<Navbar>> find()
     {
         ApiResponse<Navbar> response = new ApiResponse<>();
-        List<Navbar> optionalNavbar = navbarRepository.findAll();
-        if (optionalNavbar.isEmpty())
+        List<Navbar> all = navbarRepository.findAll();
+        if (all.isEmpty())
         {
             response.setMessage("Navbar is not found");
             return ResponseEntity.status(404).body(response);
         }
-        Navbar navbar = optionalNavbar.get(0);
+        Navbar navbar = all.get(0);
+        navbar.setOptions(null);
+        navbar.setOptions(optionRepository.findAll());
         response.setMessage("Found");
         response.setData(navbar);
         return ResponseEntity.status(200).body(response);
@@ -91,8 +96,6 @@ public class NavbarService
                 }
             }
         }*/
-        fromDb.setOptions(null);
-        navbarRepository.save(fromDb);
         fromDb.setOptions(newNavbar.getOptions());
 
         // Phone
