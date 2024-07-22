@@ -1,6 +1,5 @@
 package org.example.mrj.domain.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,7 +30,6 @@ public class EquipmentCategory extends BaseEntity {
     boolean active;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
-//    @JsonIgnore
     List<Catalog> catalogList;
 
 }

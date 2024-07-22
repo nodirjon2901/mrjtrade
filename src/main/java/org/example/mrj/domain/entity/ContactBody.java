@@ -22,4 +22,6 @@ public class ContactBody extends BaseEntity {
 
     String email;
 
+    boolean addable;
+
 }

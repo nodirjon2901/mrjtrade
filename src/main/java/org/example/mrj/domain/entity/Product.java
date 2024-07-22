@@ -20,6 +20,7 @@ public class Product extends BaseEntity {
     String name;
 
     @JsonProperty("main_description")
+    @Column(name = "main_description")
     String mainDescription;
 
     @Column(length = 1000)

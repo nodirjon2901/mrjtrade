@@ -3,6 +3,7 @@ package org.example.mrj.repository;
 import org.example.mrj.domain.entity.EquipmentCategory;
 import org.example.mrj.domain.entity.New;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface EquipmentCategoryRepository extends JpaRepository<EquipmentCategory, Long> {
+public interface EquipmentCategoryRepository extends JpaRepository<EquipmentCategory, Long>, JpaSpecificationExecutor<EquipmentCategory> {
 
     @Query(value = "select photo_url from equipment_category where id=:id", nativeQuery = true)
     String findPhotoUrlById(@Param("id") Long id);
