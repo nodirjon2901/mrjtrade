@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.entity.Navbar;
-import org.example.mrj.domain.entity.NavbarOption;
 import org.example.mrj.repository.NavbarRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -76,7 +75,7 @@ public class NavbarService
         }
         Navbar fromDb = all.get(0);
         //Check option
-        if (newNavbar.getOptions() != null)
+      /*  if (newNavbar.getOptions() != null)
         {
             for (NavbarOption fromDbOption : fromDb.getOptions())
             {
@@ -91,7 +90,8 @@ public class NavbarService
                     }
                 }
             }
-        }
+        }*/
+        fromDb.setOptions(newNavbar.getOptions());
 
         // Phone
         if (newNavbar.getPhone() != null)
