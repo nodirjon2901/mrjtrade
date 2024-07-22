@@ -3,6 +3,7 @@ package org.example.mrj.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.entity.Banner;
+import org.example.mrj.domain.entity.BannerSlider;
 import org.example.mrj.service.BannerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,50 +14,45 @@ import java.util.List;
 @RestController
 @RequestMapping("/banner")
 @RequiredArgsConstructor
-public class BannerController {
+public class BannerController
+{
 
     private final BannerService bannerService;
 
-    @PostMapping("/create")
+    @PostMapping("/add")
     public ResponseEntity<ApiResponse<Banner>> createBanner(
-            @RequestParam(value = "json") String banner,
-            @RequestPart(value = "photo") MultipartFile photo
-    ) {
-        return bannerService.create(banner, photo);
+            @RequestParam(value = "link") String link,
+            @RequestParam(value = "photo") MultipartFile gallery)
+    {
+        return bannerService.addSlider(link, gallery);
     }
 
-    @GetMapping("/get/{id}")
-    public ResponseEntity<ApiResponse<Banner>> findById(
-            @PathVariable Long id
-    ) {
-        return bannerService.findById(id);
+    @GetMapping("/get")
+    public ResponseEntity<ApiResponse<Banner>> get()
+    {
+        return bannerService.get();
     }
 
-    @GetMapping("/get-all")
-    public ResponseEntity<ApiResponse<List<Banner>>> findAll() {
-        return bannerService.findAll();
-    }
-
-    @PutMapping("/update/{id}")
+    @PutMapping("/update")
     public ResponseEntity<ApiResponse<Banner>> update(
-            @PathVariable Long id,
-            @RequestParam(value = "json", required = false) String banner,
-            @RequestPart(value = "photo", required = false) MultipartFile photo
-    ) {
-        return bannerService.update(id, banner, photo);
+            @RequestBody Banner banner)
+    {
+        return bannerService.update(banner);
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<ApiResponse<?>> delete(
             @PathVariable Long id
-    ) {
+    )
+    {
         return bannerService.deleteById(id);
     }
 
     @PutMapping("/change-active/{id}")
     public ResponseEntity<ApiResponse<?>> changeActive(
             @PathVariable Long id
-    ) {
+    )
+    {
         return bannerService.changeActive(id);
     }
 
