@@ -1,7 +1,5 @@
 package org.example.mrj.domain.entity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
@@ -17,7 +15,7 @@ import lombok.experimental.FieldDefaults;
 @Entity
 public class BannerSlider extends BaseEntity
 {
-    @OneToOne(orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToOne
     Photo photo;
 
     String link;
