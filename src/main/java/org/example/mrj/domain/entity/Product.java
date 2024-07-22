@@ -49,6 +49,7 @@ public class Product extends BaseEntity {
 
     String mainPhotoUrl;
 
+    @ElementCollection
     List<String> photoUrls;
 
     @ManyToOne

@@ -52,13 +52,13 @@ public class NavbarService
     public ResponseEntity<ApiResponse<Navbar>> find()
     {
         ApiResponse<Navbar> response = new ApiResponse<>();
-        Optional<Navbar> optionalNavbar = navbarRepository.findAll().stream().findFirst();
+        List<Navbar> optionalNavbar = navbarRepository.findAll();
         if (optionalNavbar.isEmpty())
         {
             response.setMessage("Navbar is not found");
             return ResponseEntity.status(404).body(response);
         }
-        Navbar navbar = optionalNavbar.get();
+        Navbar navbar = optionalNavbar.get(0);
         response.setMessage("Found");
         response.setData(navbar);
         return ResponseEntity.status(200).body(response);
