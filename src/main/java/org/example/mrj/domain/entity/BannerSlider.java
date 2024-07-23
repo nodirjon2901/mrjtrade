@@ -1,7 +1,7 @@
 package org.example.mrj.domain.entity;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,14 +12,20 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Entity(name = "navbar_option")
-public class NavbarOption extends BaseEntity
+@Entity
+public class BannerSlider extends BaseEntity
 {
+    @OneToOne
+    Photo photo;
 
-    String title;
-
-    @Column(unique = true, updatable = false)
-    String slug;
+    String link;
 
     Boolean active;
+
+    public BannerSlider(String link, Boolean active, Photo photo)
+    {
+        this.link = link;
+        this.active = active;
+        this.photo = photo;
+    }
 }
