@@ -3,11 +3,11 @@ package org.example.mrj.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.example.mrj.domain.dto.AboutUsMainDTO;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.entity.AboutUsHeader;
-import org.example.mrj.domain.entity.New;
 import org.example.mrj.repository.AboutUsHeaderRepository;
-import org.example.mrj.util.SlugUtil;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,87 +28,104 @@ public class AboutUsHeaderService {
 
     public ResponseEntity<ApiResponse<AboutUsHeader>> create(String strAboutUsHeader, List<MultipartFile> photoFiles) {
         ApiResponse<AboutUsHeader> response = new ApiResponse<>();
+        Optional<AboutUsHeader> optionalAboutUsHeader = aboutUsHeaderRepository.findAll().stream().findFirst();
+        if (photoFiles.size()!=2){
+            response.setMessage("The number of images must be two to create About us");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
         try {
             AboutUsHeader aboutUsHeader = objectMapper.readValue(strAboutUsHeader, AboutUsHeader.class);
-            aboutUsHeader.setPhotoUrls(new ArrayList<>());
-            for (MultipartFile photo : photoFiles) {
-                aboutUsHeader.getPhotoUrls().add(photoService.save(photo).getHttpUrl());
+            if (optionalAboutUsHeader.isPresent()) {
+                return update(aboutUsHeader);
+            }
+            aboutUsHeader.setPhotos(new ArrayList<>());
+            for (MultipartFile photoFile : photoFiles) {
+                aboutUsHeader.getPhotos().add(photoService.save(photoFile));
             }
             AboutUsHeader save = aboutUsHeaderRepository.save(aboutUsHeader);
             response.setData(save);
-            return ResponseEntity.status(200).body(response);
+            return ResponseEntity.status(201).body(response);
         } catch (JsonProcessingException e) {
             response.setMessage(e.getMessage());
             return ResponseEntity.status(409).body(response);
         }
     }
 
-    public ResponseEntity<ApiResponse<AboutUsHeader>> findById(Long id) {
+    public ResponseEntity<ApiResponse<AboutUsHeader>> find() {
         ApiResponse<AboutUsHeader> response = new ApiResponse<>();
-        Optional<AboutUsHeader> optionalAboutUsHeader = aboutUsHeaderRepository.findById(id);
+        Optional<AboutUsHeader> optionalAboutUsHeader = aboutUsHeaderRepository.findAll().stream().findFirst();
         if (optionalAboutUsHeader.isEmpty()) {
-            response.setMessage("AboutUsHeader is not found by id: " + id);
+            response.setMessage("AboutUsHeader is not found");
             return ResponseEntity.status(404).body(response);
         }
         AboutUsHeader aboutUsHeader = optionalAboutUsHeader.get();
-        response.setData(aboutUsHeader);
         response.setMessage("Found");
+        response.setData(aboutUsHeader);
         return ResponseEntity.status(200).body(response);
     }
 
-    public ResponseEntity<ApiResponse<List<AboutUsHeader>>> findAll() {
-        ApiResponse<List<AboutUsHeader>> response = new ApiResponse<>();
-        List<AboutUsHeader> all = aboutUsHeaderRepository.findAll();
-        response.setData(new ArrayList<>());
-        all.forEach(aboutUsHeader -> response.getData().add(aboutUsHeader));
-        response.setMessage("Found " + all.size() + " aboutUsHeader");
-        return ResponseEntity.status(200).body(response);
-    }
-
-    public ResponseEntity<ApiResponse<AboutUsHeader>> update(Long id, String newJson, List<MultipartFile> newPhoto) {
-        ApiResponse<AboutUsHeader> response = new ApiResponse<>();
-        Optional<AboutUsHeader> optionalAboutUsHeader = aboutUsHeaderRepository.findById(id);
+    public ResponseEntity<ApiResponse<AboutUsMainDTO>> findForMainPage(){
+        ApiResponse<AboutUsMainDTO> response=new ApiResponse<>();
+        Optional<AboutUsHeader> optionalAboutUsHeader = aboutUsHeaderRepository.findAll().stream().findFirst();
         if (optionalAboutUsHeader.isEmpty()) {
-            response.setMessage("AboutUsHeader is not found by id: " + id);
+            response.setMessage("AboutUs is not found");
             return ResponseEntity.status(404).body(response);
         }
-        List<String> oldPhotoUrls = optionalAboutUsHeader.get().getPhotoUrls();
-        AboutUsHeader newAboutUsHeader = new AboutUsHeader();
-
-        try {
-            if (newJson != null) {
-                newAboutUsHeader = objectMapper.readValue(newJson, AboutUsHeader.class);
-                if (newPhoto == null || newPhoto.isEmpty()) {
-                    newAboutUsHeader.setPhotoUrls(oldPhotoUrls);
-                }
-                newAboutUsHeader.setId(id);
-            } else {
-                newAboutUsHeader = aboutUsHeaderRepository.findById(id).get();
-            }
-            if (newPhoto != null && !newPhoto.isEmpty()) {
-                newAboutUsHeader.setPhotoUrls(new ArrayList<>());
-                for (MultipartFile photo : newPhoto) {
-                    newAboutUsHeader.getPhotoUrls().add(photoService.save(photo).getHttpUrl());
-                }
-            }
-            AboutUsHeader save = aboutUsHeaderRepository.save(newAboutUsHeader);
-            response.setData(save);
-            return ResponseEntity.status(201).body(response);
-        } catch (JsonProcessingException e) {
-            response.setMessage(e.getMessage());
-            return ResponseEntity.status(401).body(response);
-        }
-    }
-
-    public ResponseEntity<ApiResponse<?>> delete(Long id) {
-        ApiResponse<?> response = new ApiResponse<>();
-        if (aboutUsHeaderRepository.findById(id).isEmpty()) {
-            response.setMessage("AboutUsHeader is not found by id: " + id);
-            return ResponseEntity.status(404).body(response);
-        }
-        aboutUsHeaderRepository.deleteById(id);
-        response.setMessage("Successfully deleted");
+        AboutUsHeader aboutUsHeader = optionalAboutUsHeader.get();
+        response.setMessage("Found");
+        response.setData(new AboutUsMainDTO(aboutUsHeader));
         return ResponseEntity.status(200).body(response);
     }
+
+    public ResponseEntity<ApiResponse<AboutUsHeader>> update(AboutUsHeader newAboutUsHeader) {
+        ApiResponse<AboutUsHeader> response = new ApiResponse<>();
+        Optional<AboutUsHeader> optionalAboutUsHeader = aboutUsHeaderRepository.findAll().stream().findFirst();
+        if (optionalAboutUsHeader.isEmpty()) {
+            response.setMessage("AboutUsHeader is not found");
+            return ResponseEntity.status(404).body(response);
+        }
+        AboutUsHeader aboutUsHeader = optionalAboutUsHeader.get();
+        if (newAboutUsHeader.getFormName()!=null){
+            aboutUsHeader.setFormName(newAboutUsHeader.getFormName());
+        }
+        if (newAboutUsHeader.getTitle() != null) {
+            aboutUsHeader.setTitle(newAboutUsHeader.getTitle());
+        }
+        if (newAboutUsHeader.getSubtitle() != null) {
+            aboutUsHeader.setSubtitle(newAboutUsHeader.getSubtitle());
+        }
+        if (newAboutUsHeader.getDescription() != null) {
+            aboutUsHeader.setDescription(newAboutUsHeader.getDescription());
+        }
+        response.setData(aboutUsHeaderRepository.save(aboutUsHeader));
+        return ResponseEntity.status(201).body(response);
+    }
+
+    public ResponseEntity<ApiResponse<?>> delete() {
+        ApiResponse<?> response = new ApiResponse<>();
+        Optional<AboutUsHeader> optionalAboutUsHeader = aboutUsHeaderRepository.findAll().stream().findFirst();
+        if (optionalAboutUsHeader.isEmpty()) {
+            response.setMessage("AboutUsHeader is not found");
+            return ResponseEntity.status(404).body(response);
+        }
+        Long id = optionalAboutUsHeader.get().getId();
+        aboutUsHeaderRepository.deleteById(id);
+        response.setMessage("Successfully deleted!");
+        return ResponseEntity.status(200).body(response);
+    }
+
+//    public ResponseEntity<ApiResponse<?>> changeActive() {
+//        ApiResponse<?> response = new ApiResponse<>();
+//        Optional<AboutUsHeader> optionalAboutUsHeader = aboutUsHeaderRepository.findAll().stream().findFirst();
+//        if (optionalAboutUsHeader.isEmpty()) {
+//            response.setMessage("AboutUsHeader is not found");
+//            return ResponseEntity.status(404).body(response);
+//        }
+//        AboutUsHeader aboutUsHeader = optionalAboutUsHeader.get();
+//        boolean active = !aboutUsHeader.isActive();
+//        aboutUsHeaderRepository.changeActive(aboutUsHeader.getId(), active);
+//        response.setMessage("Successfully changed! Current aboutUsHeader active: " + active);
+//        return ResponseEntity.status(200).body(response);
+//    }
 
 }
