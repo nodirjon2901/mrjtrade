@@ -54,14 +54,14 @@ public class PartnerController {
         return partnerService.findOtherPartnerBySlug(partnerSlug);
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<ApiResponse<Partner>> update(
-            @PathVariable Long id,
-            @RequestParam(value = "json") String partner,
-            @RequestPart(value = "photo") MultipartFile photo
-    ) {
-        return partnerService.update(id, partner, photo);
-    }
+//    @PutMapping("/update/{id}")
+//    public ResponseEntity<ApiResponse<Partner>> update(
+//            @PathVariable Long id,
+//            @RequestParam(value = "json") String partner,
+//            @RequestPart(value = "photo") MultipartFile photo
+//    ) {
+//        return partnerService.update(id, partner, photo);
+//    }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<ApiResponse<?>> delete(

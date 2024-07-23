@@ -32,8 +32,7 @@ public class PartnerService {
         ApiResponse<Partner> response = new ApiResponse<>();
         try {
             Partner partner = objectMapper.readValue(strPartner, Partner.class);
-            Photo photo = photoService.save(photoFile);
-            partner.setPhotoUrl(photo.getHttpUrl());
+            partner.setPhoto(photoService.save(photoFile));
             partner.setActive(true);
             Partner save = partnerRepository.save(partner);
             String slug = save.getId() + "-" + save.getTitle();
@@ -103,43 +102,60 @@ public class PartnerService {
         return ResponseEntity.status(200).body(response);
     }
 
-    public ResponseEntity<ApiResponse<Partner>> update(Long id, String newJson, MultipartFile newPhoto) {
-        ApiResponse<Partner> response = new ApiResponse<>();
-        Optional<Partner> optionalPartner = partnerRepository.findById(id);
-        if (optionalPartner.isEmpty()) {
-            response.setMessage("Partner is not found by id: " + id);
-            return ResponseEntity.status(404).body(response);
-        }
-        String oldPhotoUrl = partnerRepository.findPhotoUrlById(id);
-        String slug = partnerRepository.findSlugById(id);
-        boolean active = optionalPartner.get().isActive();
-        Partner newPartner = new Partner();
+//    public ResponseEntity<ApiResponse<Partner>> update(Partner newPartner){
+//        ApiResponse<Partner> response=new ApiResponse<>();
+//        partnerRepository.findById(newPartner.getId())
+//                .map(existingPartner -> {
+//                    if (newPartner.getTitle()!=null){
+//                        existingPartner.setTitle(newPartner.getTitle());
+//                    }
+//                    if (newPartner.getMainDescription()!=null){
+//                        existingPartner.setMainDescription(newPartner.getMainDescription());
+//                    }
+//                    if (newPartner.getDescription()!=null){
+//                        existingPartner.setDescription(newPartner.getDescription());
+//                    }
+//
+//                })
+//    }
 
-        try {
-            if (newJson != null) {
-                newPartner = objectMapper.readValue(newJson, Partner.class);
-                if (newPhoto == null || !(newPhoto.getSize() > 0)) {
-                    newPartner.setPhotoUrl(oldPhotoUrl);
-                }
-                newPartner.setId(id);
-                newPartner.setSlug(slug);
-                newPartner.setActive(active);
-            } else {
-                newPartner = partnerRepository.findById(id).get();
-            }
-
-            if (newPhoto != null && newPhoto.getSize() > 0) {
-                Photo photo = photoService.save(newPhoto);
-                newPartner.setPhotoUrl(photo.getHttpUrl());
-            }
-            Partner save = partnerRepository.save(newPartner);
-            response.setData(save);
-            return ResponseEntity.status(201).body(response);
-        } catch (JsonProcessingException e) {
-            response.setMessage(e.getMessage());
-            return ResponseEntity.status(404).body(response);
-        }
-    }
+//    public ResponseEntity<ApiResponse<Partner>> update(Long id, String newJson, MultipartFile newPhoto) {
+//        ApiResponse<Partner> response = new ApiResponse<>();
+//        Optional<Partner> optionalPartner = partnerRepository.findById(id);
+//        if (optionalPartner.isEmpty()) {
+//            response.setMessage("Partner is not found by id: " + id);
+//            return ResponseEntity.status(404).body(response);
+//        }
+//        String oldPhotoUrl = partnerRepository.findPhotoUrlById(id);
+//        String slug = partnerRepository.findSlugById(id);
+//        boolean active = optionalPartner.get().isActive();
+//        Partner newPartner = new Partner();
+//
+//        try {
+//            if (newJson != null) {
+//                newPartner = objectMapper.readValue(newJson, Partner.class);
+//                if (newPhoto == null || !(newPhoto.getSize() > 0)) {
+//                    newPartner.setPhotoUrl(oldPhotoUrl);
+//                }
+//                newPartner.setId(id);
+//                newPartner.setSlug(slug);
+//                newPartner.setActive(active);
+//            } else {
+//                newPartner = partnerRepository.findById(id).get();
+//            }
+//
+//            if (newPhoto != null && newPhoto.getSize() > 0) {
+//                Photo photo = photoService.save(newPhoto);
+//                newPartner.setPhotoUrl(photo.getHttpUrl());
+//            }
+//            Partner save = partnerRepository.save(newPartner);
+//            response.setData(save);
+//            return ResponseEntity.status(201).body(response);
+//        } catch (JsonProcessingException e) {
+//            response.setMessage(e.getMessage());
+//            return ResponseEntity.status(404).body(response);
+//        }
+//    }
 
     public ResponseEntity<ApiResponse<?>> deleteById(Long id) {
         ApiResponse<?> response = new ApiResponse<>();

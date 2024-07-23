@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.example.mrj.domain.entity.Partner;
+import org.example.mrj.domain.entity.Photo;
 
 @Data
 @AllArgsConstructor
@@ -13,12 +14,12 @@ import org.example.mrj.domain.entity.Partner;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PartnerDTO {
 
-    String photoUrl;
+    Photo photo;
 
     String slug;
 
     public PartnerDTO(Partner partner) {
-        this.photoUrl = partner.getPhotoUrl();
+        this.photo = partner.getPhoto();
         this.slug = partner.getSlug();
     }
 
