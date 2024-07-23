@@ -1,7 +1,6 @@
 package org.example.mrj.repository;
 
 import org.example.mrj.domain.entity.Catalog;
-import org.example.mrj.domain.entity.EquipmentCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

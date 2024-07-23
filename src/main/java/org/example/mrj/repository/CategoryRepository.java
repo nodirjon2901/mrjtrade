@@ -1,7 +1,6 @@
 package org.example.mrj.repository;
 
-import org.example.mrj.domain.entity.EquipmentCategory;
-import org.example.mrj.domain.entity.New;
+import org.example.mrj.domain.entity.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -11,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface EquipmentCategoryRepository extends JpaRepository<EquipmentCategory, Long> {
+public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     @Query(value = "select photo_url from equipment_category where id=:id", nativeQuery = true)
     String findPhotoUrlById(@Param("id") Long id);
@@ -32,8 +31,8 @@ public interface EquipmentCategoryRepository extends JpaRepository<EquipmentCate
 
 
     @Query(value = "select * from equipment_category where slug = :slug", nativeQuery = true)
-    Optional<EquipmentCategory> findBySlug(@Param("slug") String slug);
+    Optional<Category> findBySlug(@Param("slug") String slug);
 
-    Optional<EquipmentCategory> findByName(String name);
+    Optional<Category> findByName(String name);
 
 }

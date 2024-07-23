@@ -5,16 +5,15 @@ import lombok.RequiredArgsConstructor;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.dto.CatalogDTO;
 import org.example.mrj.domain.entity.Catalog;
-import org.example.mrj.domain.entity.EquipmentCategory;
+import org.example.mrj.domain.entity.Category;
 import org.example.mrj.repository.CatalogRepository;
-import org.example.mrj.repository.EquipmentCategoryRepository;
+import org.example.mrj.repository.CategoryRepository;
 import org.example.mrj.util.SlugUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -24,11 +23,11 @@ public class CatalogService {
 
     private final CatalogRepository catalogRepository;
 
-    private final EquipmentCategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
 
     public ResponseEntity<ApiResponse<CatalogDTO>> create(Long categoryId, Catalog catalog) {
         ApiResponse<CatalogDTO> response = new ApiResponse<>();
-        Optional<EquipmentCategory> optionalEquipmentCategory = categoryRepository.findById(categoryId);
+        Optional<Category> optionalEquipmentCategory = categoryRepository.findById(categoryId);
         if (optionalEquipmentCategory.isEmpty()) {
             response.setMessage("Category is not found by id: " + categoryId);
             return ResponseEntity.status(404).body(response);

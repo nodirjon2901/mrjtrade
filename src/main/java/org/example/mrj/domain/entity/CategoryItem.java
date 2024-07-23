@@ -1,6 +1,5 @@
 package org.example.mrj.domain.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -15,23 +14,27 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Entity(name = "equipment_category")
-public class EquipmentCategory extends BaseEntity {
 
-    @Column(unique = true)
-    String name;
+@Entity
+@Table(name = "category_item")
+public class CategoryItem extends BaseEntity
+{
+    String title;
+
+    String slug;
 
     @OneToOne
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     Photo photo;
 
-    @Column(unique = true)
-    String slug;
-
-    boolean active;
-
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
-//    @JsonIgnore
+    @OneToMany(cascade = CascadeType.ALL)
+    @JsonProperty(value = "catalog")
     List<Catalog> catalogList;
 
+    Boolean active = true;
+
+    Boolean main = true;
+
+    @Column(unique = true)
+    Integer order;
 }
