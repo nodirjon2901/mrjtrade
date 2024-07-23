@@ -24,6 +24,6 @@ public class Banner extends BaseEntity
     boolean addable = true;
 
     @JsonProperty(value = "data")
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany
     List<BannerSlider> sliders;
 }
