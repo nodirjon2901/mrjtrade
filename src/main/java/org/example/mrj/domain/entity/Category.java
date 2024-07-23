@@ -26,4 +26,12 @@ public class Category extends BaseEntity
     List<CategoryItem> itemList;
 
     Boolean addable = true;
+
+    public Category(Long id, String header, List<CategoryItem> itemList, Boolean addable)
+    {
+        super(id);
+        this.header = header;
+        this.itemList = itemList;
+        this.addable = addable;
+    }
 }

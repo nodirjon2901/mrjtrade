@@ -90,7 +90,7 @@ public class CategoryService
         }
 
         response.setMessage("Found");
-        response.setData(new Category(category.getHeader(), categoryItemList, category.getAddable()));
+        response.setData(new Category(category.getId(), category.getHeader(), categoryItemList, category.getAddable()));
         return ResponseEntity.status(200).body(response);
     }
 
