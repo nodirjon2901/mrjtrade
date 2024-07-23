@@ -1,25 +1,24 @@
 package org.example.mrj.domain.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.OneToOne;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.OneToMany;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Builder
 @Entity(name = "scheme_work")
 public class SchemeWork extends BaseEntity{
 
-    String title;
+    String header;
 
-    String description;
-
-    @OneToOne
-    Photo photo;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "schemeWork")
+    List<SchemeWorkItems> schemeWorkItems;
 
 }

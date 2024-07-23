@@ -26,7 +26,7 @@ public class Product extends BaseEntity {
     @Column(length = 1000)
     String description;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     List<ProductCharacteristic> characteristic;
 
     @Column(unique = true)
