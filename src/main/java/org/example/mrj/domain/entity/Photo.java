@@ -22,7 +22,7 @@ public class Photo extends BaseEntity {
     @JsonIgnore
     String filePath;
 
-    @JsonProperty(value = "url")
+    @JsonProperty(value = "url", access = JsonProperty.Access.READ_ONLY)
     String httpUrl;
 
     @JsonIgnore

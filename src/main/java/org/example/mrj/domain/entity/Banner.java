@@ -1,25 +1,29 @@
 package org.example.mrj.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity(name = "banner")
-public class Banner extends BaseEntity {
+public class Banner extends BaseEntity
+{
+    @Column(updatable = false)
+    boolean addable = true;
 
-    String title;
-
-    String subtitle;
-
-    boolean active;
-
-    String photoUrl;
-
+    @JsonProperty(value = "data")
+    @OneToMany(cascade = CascadeType.ALL)
+    List<BannerSlider> sliders;
 }

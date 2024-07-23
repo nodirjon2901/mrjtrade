@@ -19,6 +19,7 @@ public class Partner extends BaseEntity {
     String title;
 
     @JsonProperty("main_description")
+    @Column(name = "main_description")
     String mainDescription;
 
     @Column(length = 1000)

@@ -29,13 +29,6 @@ public class Event extends BaseEntity {
 
     String photoUrl;
 
-//    @ElementCollection
-//    @CollectionTable(name = "event_information", joinColumns = @JoinColumn(name = "event_id"))
-//    @MapKeyColumn(name = "characteristic_key")
-//    @Column(name = "characteristic_value")
-//    @JsonProperty("event_information")
-//    Map<String, String> eventInformation;
-
     @OneToOne(cascade = CascadeType.ALL)
     EventInformation eventInformation;
 

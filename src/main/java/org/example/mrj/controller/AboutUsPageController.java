@@ -1,6 +1,7 @@
 package org.example.mrj.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.mrj.domain.dto.AboutUsMainDTO;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.entity.AboutUsChooseUs;
 import org.example.mrj.domain.entity.AboutUsHeader;
@@ -25,6 +26,11 @@ public class AboutUsPageController {
 
     private final AboutUsChooseUsService aboutUsChooseUsService;
 
+    @GetMapping("/get")
+    public ResponseEntity<ApiResponse<AboutUsMainDTO>> findMainAbout() {
+        return aboutUsHeaderService.findForMainPage();
+    }
+
     @PostMapping("/header/create")
     public ResponseEntity<ApiResponse<AboutUsHeader>> createAboutUsHeader(
             @RequestParam(value = "json") String aboutUsHeader,
@@ -33,32 +39,22 @@ public class AboutUsPageController {
         return aboutUsHeaderService.create(aboutUsHeader, photos);
     }
 
-    @GetMapping("/header/get/{id}")
-    public ResponseEntity<ApiResponse<AboutUsHeader>> findByIdAboutUsHeader(
-            @PathVariable Long id
-    ) {
-        return aboutUsHeaderService.findById(id);
+    @GetMapping("/header/get")
+    public ResponseEntity<ApiResponse<AboutUsHeader>> findAboutUsHeader() {
+        return aboutUsHeaderService.find();
     }
 
-    @GetMapping("/header/get-all")
-    public ResponseEntity<ApiResponse<List<AboutUsHeader>>> findAllAboutUsHeader() {
-        return aboutUsHeaderService.findAll();
-    }
-
-    @PutMapping("/header/update/{id}")
+    @PutMapping("/header/update")
     public ResponseEntity<ApiResponse<AboutUsHeader>> updateAboutUsHeader(
-            @PathVariable Long id,
-            @RequestParam(value = "json", required = false) String aboutUsHeader,
-            @RequestPart(value = "photos", required = false) List<MultipartFile> photos
+            @RequestBody AboutUsHeader aboutUsHeader
+
     ) {
-        return aboutUsHeaderService.update(id, aboutUsHeader, photos);
+        return aboutUsHeaderService.update(aboutUsHeader);
     }
 
-    @DeleteMapping("/header/delete/{id}")
-    public ResponseEntity<ApiResponse<?>> deleteAboutUsHeader(
-            @PathVariable Long id
-    ) {
-        return aboutUsHeaderService.delete(id);
+    @DeleteMapping("/header/delete")
+    public ResponseEntity<ApiResponse<?>> deleteAboutUsHeader() {
+        return aboutUsHeaderService.delete();
     }
 
     @PostMapping("/partner-service/create")

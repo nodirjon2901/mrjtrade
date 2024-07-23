@@ -3,6 +3,7 @@ package org.example.mrj.repository;
 import org.example.mrj.domain.entity.Event;
 import org.example.mrj.domain.entity.New;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface EventRepository extends JpaRepository<Event, Long> {
+public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecificationExecutor<Event> {
 
     @Query(value = "select photo_url from event where id=:id", nativeQuery = true)
     String findPhotoUrlById(@Param("id")Long id);

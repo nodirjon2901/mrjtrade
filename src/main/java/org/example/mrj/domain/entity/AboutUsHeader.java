@@ -1,6 +1,7 @@
 package org.example.mrj.domain.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,12 +17,15 @@ import java.util.List;
 @Entity(name = "about_us_header")
 public class AboutUsHeader extends BaseEntity{
 
+    String formName;
+
     String title;
 
     String subtitle;
 
     String description;
 
-    List<String> photoUrls;
+    @OneToMany
+    List<Photo> photos;
 
 }

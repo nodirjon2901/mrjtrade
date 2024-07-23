@@ -3,6 +3,7 @@ package org.example.mrj.repository;
 import org.example.mrj.domain.entity.New;
 import org.example.mrj.domain.entity.Partner;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface PartnerRepository extends JpaRepository<Partner, Long> {
+public interface PartnerRepository extends JpaRepository<Partner, Long>, JpaSpecificationExecutor<Partner> {
 
     @Query(value = "select photo_url from partner where id=:id", nativeQuery = true)
     String findPhotoUrlById(@Param("id")Long id);

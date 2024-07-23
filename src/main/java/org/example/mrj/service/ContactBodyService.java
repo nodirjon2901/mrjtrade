@@ -21,6 +21,7 @@ public class ContactBodyService {
         if (optionalContactBody.isPresent()) {
             return update(contactBody);
         }
+        contactBody.setAddable(true);
         ContactBody save = contactBodyRepository.save(contactBody);
         response.setData(save);
         return ResponseEntity.status(200).body(response);
@@ -50,6 +51,7 @@ public class ContactBodyService {
         oldContactBody.setPhone(contactBody.getPhone());
         oldContactBody.setEmail(contactBody.getEmail());
         oldContactBody.setSchedule(contactBody.getSchedule());
+        oldContactBody.setAddable(true);
         ContactBody save = contactBodyRepository.save(oldContactBody);
         response.setData(save);
         return ResponseEntity.status(200).body(response);
