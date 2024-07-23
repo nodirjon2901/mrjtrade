@@ -2,6 +2,7 @@ package org.example.mrj.repository;
 
 import org.example.mrj.domain.entity.CategoryItem;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface CategoryItemRepository extends JpaRepository<CategoryItem, Long>
+public interface CategoryItemRepository extends JpaRepository<CategoryItem, Long>, JpaSpecificationExecutor<CategoryItem>
 {
     @Query(value = "SELECT order_num FROM category_item  WHERE order_num IS NOT NULL", nativeQuery = true)
     List<Integer> findAllExistingOrders();
