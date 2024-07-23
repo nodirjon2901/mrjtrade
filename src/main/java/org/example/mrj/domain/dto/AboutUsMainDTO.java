@@ -27,7 +27,7 @@ public class AboutUsMainDTO {
     public AboutUsMainDTO(AboutUsHeader aboutUsHeader){
         this.id= aboutUsHeader.getId();
         this.formName=aboutUsHeader.getFormName();
-        this.description=aboutUsHeader.getTitle()+" "+aboutUsHeader.getSubtitle()+". "+aboutUsHeader.getDescription();
+        this.description=aboutUsHeader.getDescription();
         this.photos=aboutUsHeader.getPhotos();
     }
 
