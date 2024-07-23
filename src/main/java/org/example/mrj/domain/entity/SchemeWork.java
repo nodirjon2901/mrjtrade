@@ -1,6 +1,7 @@
 package org.example.mrj.domain.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,6 +19,7 @@ public class SchemeWork extends BaseEntity{
 
     String description;
 
-    String photoUrl;
+    @OneToOne
+    Photo photo;
 
 }
