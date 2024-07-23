@@ -119,7 +119,7 @@ public class ProductService {
         response.setData(new ArrayList<>());
         List<Product> all = productRepository.findAll();
         all.stream()
-                .filter(product -> (product.getCatalog().getSlug().equals(catalogSlug) && !product.getSlug().equals(productSlug)))
+//                .filter(product -> (product.getCatalog().getSlug().equals(catalogSlug) && !product.getSlug().equals(productSlug)))
                 .limit(4)
                 .toList()
                 .forEach(product -> response.getData().add(new ProductForListDTO(product)));
@@ -131,7 +131,7 @@ public class ProductService {
         response.setData(new ArrayList<>());
         List<Product> all = productRepository.findAll();
         all.stream()
-                .filter(product -> product.getCatalog().getSlug().equals(catalogSlug))
+//                .filter(product -> product.getCatalog().getSlug().equals(catalogSlug))
                 .toList()
                 .forEach(product -> response.getData().add(new ProductDTO(product)));
         return ResponseEntity.status(200).body(response);
@@ -142,7 +142,7 @@ public class ProductService {
         response.setData(new ArrayList<>());
         List<Product> all = productRepository.findAll();
         all.stream()
-                .filter(product -> product.getCatalog().getCategory().getSlug().equals(categorySlug))
+//                .filter(product -> product.getCatalog().getCategory().getSlug().equals(categorySlug))
                 .toList()
                 .forEach(product -> response.getData().add(new ProductDTO(product)));
         return ResponseEntity.status(200).body(response);

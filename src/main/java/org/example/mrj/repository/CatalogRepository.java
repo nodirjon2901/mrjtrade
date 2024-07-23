@@ -12,22 +12,8 @@ import java.util.Optional;
 @Repository
 public interface CatalogRepository extends JpaRepository<Catalog, Long> {
 
-    @Modifying
-    @Query(value = "update catalog set active=:active where id=:id", nativeQuery = true)
-    void changeActive(@Param("id") Long id, boolean active);
 
     @Modifying
-    @Query(value = "update catalog set slug = :slug where id = :id", nativeQuery = true)
-    void updateSlug(@Param("slug") String slug, @Param("id") Long catalogId);
-
-    @Query(value = "select slug from catalog where id = :id", nativeQuery = true)
-    String findSlugById(@Param("id") Long catalogId);
-
-
-    @Query(value = "select * from catalog where slug = :slug", nativeQuery = true)
-    Optional<Catalog> findBySlug(@Param("slug") String slug);
-
-    Optional<Catalog> findByNameAndCategory_Id(String name,Long categoryId);
-
-
+    @Query(value = "UPDATE catalog SET name = :name WHERE id = :id", nativeQuery = true)
+    void updateName(Long id, String name);
 }

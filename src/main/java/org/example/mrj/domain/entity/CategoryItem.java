@@ -21,6 +21,8 @@ public class CategoryItem extends BaseEntity
 {
     String title;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @Column(unique = true)
     String slug;
 
     @OneToOne
@@ -35,6 +37,5 @@ public class CategoryItem extends BaseEntity
 
     Boolean main = true;
 
-    @Column(unique = true)
-    Integer order;
+    Integer orderNum;
 }

@@ -12,27 +12,6 @@ import java.util.Optional;
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
-    @Query(value = "select photo_url from equipment_category where id=:id", nativeQuery = true)
-    String findPhotoUrlById(@Param("id") Long id);
 
-    @Modifying
-    @Query(value = "update equipment_category set active=:active where id=:id", nativeQuery = true)
-    void changeActive(@Param("id") Long id, boolean active);
-
-    @Modifying
-    @Query(value = "update equipment_category set slug = :slug where id = :id", nativeQuery = true)
-    void updateSlug(@Param("slug") String slug, @Param("id") Long categoryId);
-
-    @Query(value = "select slug from equipment_category where id = :id", nativeQuery = true)
-    String findSlugById(@Param("id") Long categoryId);
-
-    @Query(value = "select name from equipment_category where id=:id", nativeQuery = true)
-    String findNameById(@Param("id") Long categoryId);
-
-
-    @Query(value = "select * from equipment_category where slug = :slug", nativeQuery = true)
-    Optional<Category> findBySlug(@Param("slug") String slug);
-
-    Optional<Category> findByName(String name);
 
 }

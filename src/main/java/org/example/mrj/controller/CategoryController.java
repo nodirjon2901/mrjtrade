@@ -9,6 +9,7 @@ import org.example.mrj.service.CategoryService;
 import org.example.mrj.service.ProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -24,38 +25,39 @@ public class CategoryController
 
     @PostMapping("/add")
     public ResponseEntity<ApiResponse<Category>> add(
-            @RequestBody CategoryItem categoryItem)
+            @RequestParam("json") String json,
+            @RequestParam("photo") MultipartFile photo)
     {
-        return categoryService.addItem(categoryItem);
+        return categoryService.addItem(json, photo);
     }
 
-    @GetMapping("/get")
-    public ResponseEntity<ApiResponse<Category>> get()
+    @GetMapping
+    public ResponseEntity<ApiResponse<Category>> get(
+            @RequestParam(value = "main", required = false) Boolean main,
+            @RequestParam(value = "active", required = false) Boolean active)
     {
-        return categoryService.get();
+        return categoryService.get(main, active);
     }
 
-    @PutMapping("/update/{id}")
+    @GetMapping("/{slug}")
+    public ResponseEntity<ApiResponse<CategoryItem>> getItem(
+            @PathVariable String slug)
+    {
+        return categoryService.getItem(slug);
+    }
+
+    @PutMapping
     public ResponseEntity<ApiResponse<Category>> update(
             @RequestBody Category category)
     {
         return categoryService.update(category);
     }
 
-    @PutMapping("/change-active/{id}")
-    public ResponseEntity<ApiResponse<?>> changeActive(
-            @PathVariable Long id
-    )
-    {
-        return categoryService.changeActive(id);
-    }
-
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/delete/{item-id}")
     public ResponseEntity<ApiResponse<?>> delete(
-            @PathVariable Long id
-    )
+            @PathVariable("item-id") Long itemId)
     {
-        return categoryService.delete(id);
+        return categoryService.delete(itemId);
     }
 
     @GetMapping("/products/{slug}")

@@ -22,7 +22,7 @@ public class Category extends BaseEntity
     String header;
 
     @OneToMany(cascade = CascadeType.ALL)
-    @JsonProperty(value = "data")
+    @JsonProperty(value = "item")
     List<CategoryItem> itemList;
 
     Boolean addable = true;
