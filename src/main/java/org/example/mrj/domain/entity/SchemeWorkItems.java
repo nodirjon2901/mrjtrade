@@ -1,6 +1,9 @@
 package org.example.mrj.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,18 +11,21 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Entity(name = "main_about_us")
-public class MainAboutUs extends BaseEntity{
+@Entity(name = "scheme_work_items")
+public class SchemeWorkItems extends BaseEntity {
 
     String title;
 
     String description;
 
-    String photoUrl;
+    @OneToOne
+    Photo photo;
 
-    boolean active;
+    @ManyToOne
+    @JsonIgnore
+    SchemeWork schemeWork;
 
 }

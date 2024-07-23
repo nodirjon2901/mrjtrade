@@ -20,12 +20,13 @@ public class Product extends BaseEntity {
     String name;
 
     @JsonProperty("main_description")
+    @Column(name = "main_description")
     String mainDescription;
 
     @Column(length = 1000)
     String description;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     List<ProductCharacteristic> characteristic;
 
     @Column(unique = true)
