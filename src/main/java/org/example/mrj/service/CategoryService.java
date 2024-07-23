@@ -116,32 +116,57 @@ public class CategoryService
         Category fromDB = all.get(0);
         List<CategoryItem> fromDBItemList = fromDB.getItemList();
         List<CategoryItem> newItemList = newCategory.getItemList();
-        boolean allOrderNumberGiven = true;
-
+        int givenOrderNumCount = 0;
         for (CategoryItem newItem : newItemList)
         {
             if (newItem.getId() != null)
             {
                 if (newItem.getTitle() != null)
                 {
-                    replaceTitle(fromDBItemList, newItem.getId(), newItem.getTitle());
+                    for (CategoryItem item : fromDBItemList)
+                        if (item.getId().equals(newItem.getId()) && !item.getTitle().equals(newItem.getTitle()))
+                        {
+                            item.setTitle(newItem.getTitle());
+                            item.setSlug(SlugUtil.makeSlug(newItem.getTitle()));
+                        }
                 }
                 if (newItem.getCatalogList() != null)
-                    updateCatalogList(fromDBItemList, newItem.getId(), newItem.getCatalogList());
+                {
+                    for (CategoryItem item : fromDBItemList)
+                        if (item.getId().equals(newItem.getId()))
+                        {
+                            for (Catalog fromDb : item.getCatalogList())
+                            {
+                                for (Catalog newItemCatalog : newItem.getCatalogList())
+                                {
+                                    if (fromDb.getId().equals(newItemCatalog.getId()))
+                                        fromDb.setName(newItemCatalog.getName());
+                                }
+                            }
+                        }
+                }
                 if (newItem.getActive() != null)
-                    replaceActive(fromDBItemList, newItem.getId(), newItem.getActive());
+                {
+                    for (CategoryItem categoryItemFromDB : fromDBItemList)
+                        if (categoryItemFromDB.getId().equals(newItem.getId()))
+                            categoryItemFromDB.setActive(newItem.getActive());
+                }
                 if (newItem.getMain() != null)
-                    replaceMain(fromDBItemList, newItem.getId(), newItem.getActive());
-                if (newItem.getOrderNum() == null)
-                    allOrderNumberGiven = false;
+                {
+                    for (CategoryItem categoryItemFromDB : fromDBItemList)
+                        if (categoryItemFromDB.getId().equals(newItem.getId()))
+                            categoryItemFromDB.setMain(newItem.getMain());
+                }
             }
+            if (newItem.getOrderNum() != null)
+                givenOrderNumCount++;
         }
         //Update order number
-        if (!allOrderNumberGiven) //if not given all order number
+        if (givenOrderNumCount > 0 && givenOrderNumCount != fromDBItemList.size())
         {
-            response.setMessage("Not given all order's number. If you change order any number, please send all item's new order number");
+            response.setMessage("In database have: " + fromDBItemList.size() + " item(s). But you send " + givenOrderNumCount + " order number(s)");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        } else
+        } else if (givenOrderNumCount == fromDBItemList.size() && givenOrderNumCount != 0)
         {
             replaceOrderNum(fromDBItemList, newItemList);
         }
@@ -195,7 +220,7 @@ public class CategoryService
     {
         for (CategoryItem item : fromDBItemList)
         {
-            if (item.getId().equals(id))
+            if (item.getId().equals(id) && !item.getTitle().equals(title))
             {
                 item.setTitle(title);
                 item.setSlug(SlugUtil.makeSlug(title));
