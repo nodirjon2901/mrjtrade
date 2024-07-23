@@ -1,10 +1,8 @@
 package org.example.mrj.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,7 +21,9 @@ public class EquipmentCategory extends BaseEntity {
     @Column(unique = true)
     String name;
 
-    String photoUrl;
+    @OneToOne
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    Photo photo;
 
     @Column(unique = true)
     String slug;
