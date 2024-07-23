@@ -9,6 +9,7 @@ import org.example.mrj.domain.entity.Banner;
 import org.example.mrj.domain.entity.BannerSlider;
 import org.example.mrj.repository.BannerRepository;
 import org.example.mrj.repository.BannerSliderRepository;
+import org.example.mrj.repository.PhotoRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,23 +29,27 @@ public class BannerService
 
     private final ObjectMapper objectMapper;
     private final BannerSliderRepository sliderRepo;
+    private final BannerSliderRepository bannerSliderRepository;
+    private final PhotoRepository photoRepository;
 
     public ResponseEntity<ApiResponse<BannerWrapper>> addSlider(String link, Boolean active, MultipartFile photo)
     {
         ApiResponse<BannerWrapper> response = new ApiResponse<>();
         List<Banner> all = bannerRepository.findAll();
+        BannerSlider saved = sliderRepo.save(new BannerSlider(link, active, photoService.save(photo)));
+
         if (all.isEmpty())
         {
             Banner banner = new Banner();
             banner.setSliders(new ArrayList<>());
-            banner.getSliders().add(new BannerSlider(link, active, photoService.save(photo)));
+            banner.getSliders().add(saved);
             bannerRepository.save(banner);
             response.setData(new BannerWrapper(banner));
             response.setMessage("Created first banner successfully");
             return ResponseEntity.ok(response);
         }
         Banner banner = all.get(0);
-        banner.getSliders().add(new BannerSlider(link, active, photoService.save(photo)));
+        banner.getSliders().add(saved);
         bannerRepository.save(banner);
         response.setData(new BannerWrapper(banner));
         response.setMessage("Added slider (photo)");
@@ -61,8 +66,18 @@ public class BannerService
             return ResponseEntity.status(404).body(response);
         }
         Banner banner = all.get(0);
-        List<BannerSlider> sliderList = sliderRepo.findAllById(bannerRepository.getSlidersId());
-        banner.setSliders(sliderList);
+        System.out.println("banner.getSliders().size() = " + banner.getSliders().size());
+        List<Long> slidersId = bannerRepository.getSlidersId();
+        System.err.println("slidersId = " + slidersId);
+
+        banner.setSliders(new ArrayList<>());
+        for (Long id : slidersId)
+        {
+            banner.getSliders().add(bannerSliderRepository.findById(id).get());
+        }
+        System.err.println("banner.getSliders().size() = " + banner.getSliders().size());
+
+
         response.setData(new BannerWrapper(banner));
         response.setMessage("Found");
         return ResponseEntity.status(200).body(response);
@@ -78,7 +93,18 @@ public class BannerService
             return ResponseEntity.status(404).body(response);
         }
         Banner fromDb = all.get(0);
+
+        for (BannerSlider newSlider : newBanner.getSliders())
+        {
+            if (newSlider.getId() != null)
+            {
+                newSlider.setPhoto(photoRepository.findByIdOrName(newSlider.getPhoto().getId(), null));
+                sliderRepo.save(newSlider);
+            }
+        }
+
         fromDb.setSliders(newBanner.getSliders());
+        bannerRepository.save(fromDb);
 
 /*        // Step 1 : Find which field are non-null from newBanner. Non-null field are must have changed
         // Step 2 : Find non-null field of newBanner from oldBanner
@@ -93,7 +119,7 @@ public class BannerService
             }
         }*/
 
-        response.setData(new BannerWrapper(bannerRepository.save(fromDb)));
+        response.setData(new BannerWrapper(fromDb));
         response.setMessage("Updated");
         return ResponseEntity.status(200).body(response);
     }

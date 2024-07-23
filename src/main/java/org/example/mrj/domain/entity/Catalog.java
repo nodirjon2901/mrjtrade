@@ -18,18 +18,4 @@ import java.util.List;
 public class Catalog extends BaseEntity {
 
     String name;
-
-    @Column(unique = true)
-    String slug;
-
-    boolean active;
-
-    @ManyToOne
-    @JsonIgnore
-    EquipmentCategory category;
-
-    @OneToMany(mappedBy = "catalog", cascade = CascadeType.ALL)
-    @JsonIgnore
-    List<Product> productList;
-
 }

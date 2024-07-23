@@ -1,7 +1,7 @@
 package org.example.mrj.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
@@ -17,19 +17,13 @@ import java.util.List;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity(name = "equipment_category")
-public class EquipmentCategory extends BaseEntity {
+public class Category extends BaseEntity
+{
+    String header;
 
-    @Column(unique = true)
-    String name;
+    @OneToMany(cascade = CascadeType.ALL)
+    @JsonProperty(value = "item")
+    List<CategoryItem> itemList;
 
-    String photoUrl;
-
-    @Column(unique = true)
-    String slug;
-
-    boolean active;
-
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
-    List<Catalog> catalogList;
-
+    Boolean addable = true;
 }
