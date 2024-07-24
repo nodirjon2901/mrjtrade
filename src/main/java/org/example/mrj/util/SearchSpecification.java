@@ -9,13 +9,13 @@ import java.util.Objects;
 @Component
 public class SearchSpecification {
 
-    public Specification<Category> equipmentCategoryContains(String searchTerm) {
+    public Specification<CategoryItem> equipmentCategoryContains(String searchTerm) {
         String[] searchTerms = searchTerm.toLowerCase().split(" ");
         return (root, query, criteriaBuilder) -> {
-            Specification<Category> spec = null;
+            Specification<CategoryItem> spec = null;
             for (String term : searchTerms) {
-                Specification<Category> tempSpec = (root1, query1, criteriaBuilder1) -> criteriaBuilder.or(
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + term + "%")
+                Specification<CategoryItem> tempSpec = (root1, query1, criteriaBuilder1) -> criteriaBuilder.or(
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), "%" + term + "%")
                 );
                 if (spec == null) {
                     spec = tempSpec;

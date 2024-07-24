@@ -93,6 +93,7 @@ public class NewService {
         List<New> all = newRepository.findAll();
         response.setData(new ArrayList<>());
         all.forEach(newness -> response.getData().add(new NewDTO(newness)));
+        response.getData().sort(Comparator.comparing(NewDTO::getOrderNum));
         response.setMessage("Found " + all.size() + " new(s)");
         return ResponseEntity.status(200).body(response);
     }
@@ -128,10 +129,10 @@ public class NewService {
     public ResponseEntity<ApiResponse<New>> update(New newness) {
         ApiResponse<New> response = new ApiResponse<>();
         New existingNew = newRepository.findById(newness.getId()).orElseThrow(() -> new NotFoundException("Newness is not found by id: " + newness.getId()));
-        String slug = newness.getId() + "-" + SlugUtil.makeSlug(newness.getTitle());
-        existingNew.setSlug(slug);
         if (newness.getTitle() != null) {
             existingNew.setTitle(newness.getTitle());
+            String slug = existingNew.getId() + "-" + SlugUtil.makeSlug(existingNew.getTitle());
+            existingNew.setSlug(slug);
         }
         if (newness.getBody() != null) {
             existingNew.setBody(newness.getBody());

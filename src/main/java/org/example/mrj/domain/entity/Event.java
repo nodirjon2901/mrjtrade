@@ -27,7 +27,8 @@ public class Event extends BaseEntity {
 
     boolean active;
 
-    String photoUrl;
+    @OneToOne
+    Photo photo;
 
     @OneToOne(cascade = CascadeType.ALL)
     EventInformation eventInformation;

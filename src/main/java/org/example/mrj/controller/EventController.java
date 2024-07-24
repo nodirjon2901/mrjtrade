@@ -74,13 +74,11 @@ public class EventController {
         return eventService.findAllByPageNation(page, size);
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/update")
     public ResponseEntity<ApiResponse<Event>> update(
-            @PathVariable Long id,
-            @RequestParam(value = "json", required = false) String event,
-            @RequestPart(value = "photo", required = false) MultipartFile photo
+           @RequestBody Event event
     ) {
-        return eventService.update(id, event, photo);
+        return eventService.update(event);
     }
 
     @PutMapping("/change-active/{id}")

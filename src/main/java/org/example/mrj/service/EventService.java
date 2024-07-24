@@ -9,7 +9,7 @@ import org.example.mrj.domain.dto.CheckInFormDTO;
 import org.example.mrj.domain.dto.EventDTO;
 import org.example.mrj.domain.entity.Event;
 import org.example.mrj.domain.entity.EventCity;
-import org.example.mrj.domain.entity.Photo;
+import org.example.mrj.exception.NotFoundException;
 import org.example.mrj.repository.EventCityRepository;
 import org.example.mrj.repository.EventRepository;
 import org.example.mrj.util.SlugUtil;
@@ -49,7 +49,7 @@ public class EventService {
             Event event = objectMapper.readValue(json, Event.class);
             event.setActive(true);
             event.setCity(cityOptional.get());
-            event.setPhotoUrl(photoService.save(newPhoto).getHttpUrl());
+            event.setPhoto(photoService.save(newPhoto));
             Event save = eventRepository.save(event);
             String slug = save.getId() + "-" + SlugUtil.makeSlug(event.getTitle());
             eventRepository.updateSlug(slug, save.getId());
@@ -150,44 +150,19 @@ public class EventService {
         return ResponseEntity.status(200).body(response);
     }
 
-    public ResponseEntity<ApiResponse<Event>> update(Long id, String newJson, MultipartFile newPhoto) {
+    public ResponseEntity<ApiResponse<Event>> update(Event event) {
         ApiResponse<Event> response = new ApiResponse<>();
-        Optional<Event> optionalEvent = eventRepository.findById(id);
-        if (optionalEvent.isEmpty()) {
-            response.setMessage("Event is not found by id: " + id);
-            return ResponseEntity.status(404).body(response);
+        Event existingEvent = eventRepository.findById(event.getId()).orElseThrow(() -> new NotFoundException("Event is not found by id: " + event.getId()));
+        if (event.getTitle() != null) {
+            existingEvent.setTitle(event.getTitle());
+            String slug = existingEvent.getId() + "-" + SlugUtil.makeSlug(existingEvent.getTitle());
+            existingEvent.setTitle(slug);
         }
-
-        String oldPhotoUrl = eventRepository.findPhotoUrlById(id);
-        String slug = eventRepository.findSlugById(id);
-        boolean active = optionalEvent.get().isActive();
-        Event newEvent = new Event();
-
-        try {
-            if (newJson != null) {
-                newEvent = objectMapper.readValue(newJson, Event.class);
-                if (newPhoto == null || newPhoto.isEmpty()) {
-                    newEvent.setPhotoUrl(oldPhotoUrl);
-                }
-                newEvent.setId(id);
-                newEvent.setSlug(slug);
-                newEvent.setActive(active);
-                newEvent.setCity(optionalEvent.get().getCity());
-            } else {
-                newEvent = eventRepository.findById(id).get();
-            }
-
-            if (newPhoto != null && !newPhoto.isEmpty()) {
-                Photo photo = photoService.save(newPhoto);
-                newEvent.setPhotoUrl(photo.getHttpUrl());
-            }
-            Event save = eventRepository.save(newEvent);
-            response.setData(save);
-            return ResponseEntity.status(200).body(response);
-        } catch (JsonProcessingException e) {
-            response.setMessage(e.getMessage());
-            return ResponseEntity.status(401).body(response);
+        if (event.getDescription() != null) {
+            existingEvent.setDescription(event.getDescription());
         }
+        response.setData(eventRepository.save(existingEvent));
+        return ResponseEntity.ok().body(response);
     }
 
     public ResponseEntity<ApiResponse<?>> changeActive(Long id) {

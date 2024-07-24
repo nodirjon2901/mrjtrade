@@ -110,10 +110,10 @@ public class PartnerService {
         ApiResponse<Partner> response = new ApiResponse<>();
         return partnerRepository.findById(newPartner.getId())
                 .map(existingPartner -> {
-                    String slug = existingPartner.getId() + "-" + SlugUtil.makeSlug(existingPartner.getTitle());
-                    existingPartner.setSlug(slug);
                     if (newPartner.getTitle() != null) {
                         existingPartner.setTitle(newPartner.getTitle());
+                        String slug = existingPartner.getId() + "-" + SlugUtil.makeSlug(existingPartner.getTitle());
+                        existingPartner.setSlug(slug);
                     }
                     if (newPartner.getMainDescription() != null) {
                         existingPartner.setMainDescription(newPartner.getMainDescription());
