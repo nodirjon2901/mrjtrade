@@ -14,13 +14,19 @@ import org.example.mrj.domain.entity.Photo;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PartnerDTO {
 
+    Long id;
+
     Photo photo;
 
     String slug;
 
+    Integer orderNum;
+
     public PartnerDTO(Partner partner) {
+        this.id= partner.getId();
         this.photo = partner.getPhoto();
         this.slug = partner.getSlug();
+        this.orderNum=partner.getOrderNum();
     }
 
 }

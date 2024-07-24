@@ -1,6 +1,7 @@
 package org.example.mrj.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.mrj.domain.NewnessWrapper;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.dto.NewDTO;
 import org.example.mrj.domain.entity.New;
@@ -60,14 +61,18 @@ public class NewController {
         return newService.findFourNews();
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<ApiResponse<New>> update(
-            @PathVariable Long id,
-            @RequestParam(value = "json") String newness,
-            @RequestPart(value = "mainPhoto") MultipartFile mainPhoto,
-            @RequestPart(value = "photos") List<MultipartFile> photos
+    @PutMapping("/change-order")
+    public ResponseEntity<ApiResponse<List<NewDTO>>> changeOrder(
+            @RequestBody List<NewnessWrapper> newnessWrapperList
     ) {
-        return newService.update(id, newness, mainPhoto, photos);
+        return newService.changeOrder(newnessWrapperList);
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<ApiResponse<New>> update(
+            @RequestBody New newness
+    ) {
+        return newService.update(newness);
     }
 
     @PutMapping("/change-active/{id}")

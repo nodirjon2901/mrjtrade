@@ -4,19 +4,26 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.example.mrj.domain.NewnessWrapper;
+import org.example.mrj.domain.PartnerWrapper;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.dto.NewDTO;
+import org.example.mrj.domain.entity.AboutUsHeader;
 import org.example.mrj.domain.entity.New;
+import org.example.mrj.domain.entity.Partner;
+import org.example.mrj.exception.NotFoundException;
 import org.example.mrj.repository.NewRepository;
 import org.example.mrj.util.SlugUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,13 +40,15 @@ public class NewService {
 
     public ResponseEntity<ApiResponse<New>> create(String strNew, MultipartFile mainPhoto, List<MultipartFile> photoFiles) {
         ApiResponse<New> response = new ApiResponse<>();
+        Optional<Integer> maxOrderNum = newRepository.getMaxOrderNum();
         try {
             New newness = objectMapper.readValue(strNew, New.class);
-            newness.setPhotoUrls(new ArrayList<>());
+            newness.setGallery(new ArrayList<>());
             newness.setActive(true);
-            newness.setMainPhotoUrl(photoService.save(mainPhoto).getHttpUrl());
+            newness.setOrderNum(maxOrderNum.map(num -> num + 1).orElse(1));
+            newness.setPhoto(photoService.save(mainPhoto));
             for (MultipartFile photo : photoFiles) {
-                newness.getPhotoUrls().add(photoService.save(photo).getHttpUrl());
+                newness.getGallery().add(photoService.save(photo));
             }
             New save = newRepository.save(newness);
             String slug = save.getId() + "-" + SlugUtil.makeSlug(save.getTitle());
@@ -116,51 +125,43 @@ public class NewService {
         return ResponseEntity.status(200).body(response);
     }
 
-
-    public ResponseEntity<ApiResponse<New>> update(Long id, String newJson, MultipartFile newMainPhoto, List<MultipartFile> newPhotosFile) {
+    public ResponseEntity<ApiResponse<New>> update(New newness) {
         ApiResponse<New> response = new ApiResponse<>();
-        Optional<New> optionalNew = newRepository.findById(id);
-        if (optionalNew.isEmpty()) {
-            response.setMessage("New is not found by id: " + id);
-            return ResponseEntity.status(404).body(response);
+        New existingNew = newRepository.findById(newness.getId()).orElseThrow(() -> new NotFoundException("Newness is not found by id: " + newness.getId()));
+        String slug = newness.getId() + "-" + SlugUtil.makeSlug(newness.getTitle());
+        existingNew.setSlug(slug);
+        if (newness.getTitle() != null) {
+            existingNew.setTitle(newness.getTitle());
         }
-        List<String> oldPhotoUrls = optionalNew.get().getPhotoUrls();
-        String oldMainPhotoUrl = optionalNew.get().getMainPhotoUrl();
-        boolean active = optionalNew.get().isActive();
-        String slug = newRepository.findSlugById(id);
-        New newness = new New();
+        if (newness.getBody() != null) {
+            existingNew.setBody(newness.getBody());
+        }
+        if (newness.getDate() != null) {
+            existingNew.setDate(newness.getDate());
+        }
+        response.setData(newRepository.save(existingNew));
+        return ResponseEntity.ok().body(response);
+    }
 
-        try {
-            if (newJson != null) {
-                newness = objectMapper.readValue(newJson, New.class);
-                newness.setId(id);
-                newness.setSlug(slug);
-                newness.setActive(active);
-            } else {
-                newness = newRepository.findById(id).get();
-            }
-
-            if (newMainPhoto == null || newMainPhoto.isEmpty()) {
-                newness.setMainPhotoUrl(oldMainPhotoUrl);
-            } else {
-                newness.setMainPhotoUrl(photoService.save(newMainPhoto).getHttpUrl());
-            }
-            if (newPhotosFile == null || newPhotosFile.isEmpty()) {
-                newness.setPhotoUrls(oldPhotoUrls);
-            } else {
-                newness.setPhotoUrls(new ArrayList<>());
-                for (MultipartFile photo : newPhotosFile) {
-                    newness.getPhotoUrls().add(photoService.save(photo).getHttpUrl());
+    public ResponseEntity<ApiResponse<List<NewDTO>>> changeOrder(List<NewnessWrapper> newnessWrapperList) {
+        ApiResponse<List<NewDTO>> response = new ApiResponse<>();
+        response.setData(new ArrayList<>());
+        List<New> dbAll = newRepository.findAll();
+        if (dbAll.size() != newnessWrapperList.size()) {
+            response.setMessage("In database have: " + dbAll.size() + " newness. But you send " + newnessWrapperList.size() + " order number(s)");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        for (New db : newRepository.findAll()) {
+            Long dbId = db.getId();
+            for (NewnessWrapper newnessWrapper : newnessWrapperList) {
+                if (newnessWrapper.id().equals(dbId)) {
+                    db.setOrderNum(newnessWrapper.orderNum());
+                    response.getData().add(new NewDTO(newRepository.save(db)));
                 }
             }
-
-            New save = newRepository.save(newness);
-            response.setData(save);
-            return ResponseEntity.status(201).body(response);
-        } catch (JsonProcessingException e) {
-            response.setMessage(e.getMessage());
-            return ResponseEntity.status(401).body(response);
         }
+        response.getData().sort(Comparator.comparing(NewDTO::getOrderNum));
+        return ResponseEntity.status(201).body(response);
     }
 
     public ResponseEntity<ApiResponse<?>> deleteById(Long id) {

@@ -3,7 +3,6 @@ package org.example.mrj.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.dto.PhotoDTO;
-import org.example.mrj.exception.PhotoNotFoundException;
 import org.example.mrj.service.PhotoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -5,7 +5,7 @@ import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.dto.PhotoDTO;
 import org.example.mrj.domain.entity.Photo;
 import org.example.mrj.exception.IllegalPhotoTypeException;
-import org.example.mrj.exception.PhotoNotFoundException;
+import org.example.mrj.exception.NotFoundException;
 import org.example.mrj.repository.PhotoRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -110,7 +110,7 @@ public class PhotoService
         } catch (IOException e)
         {
             e.printStackTrace();
-            throw new PhotoNotFoundException(e.getMessage());
+            throw new NotFoundException(e.getMessage());
         }
         return null;
     }
@@ -120,7 +120,7 @@ public class PhotoService
         ApiResponse<PhotoDTO> response = new ApiResponse<>();
         Optional<Photo> byId = photoRepository.findById(id);
         if (byId.isEmpty())
-            throw new PhotoNotFoundException("Photo not found with id: " + id);
+            throw new NotFoundException("Photo not found with id: " + id);
 
         if (file.getContentType() != null && !(file.getContentType().equals("image/png") ||
                 file.getContentType().equals("image/svg+xml") ||

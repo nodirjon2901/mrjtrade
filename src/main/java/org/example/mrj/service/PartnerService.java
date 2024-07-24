@@ -4,16 +4,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.example.mrj.domain.PartnerWrapper;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.dto.PartnerDTO;
 import org.example.mrj.domain.entity.Partner;
-import org.example.mrj.domain.entity.Photo;
 import org.example.mrj.repository.PartnerRepository;
+import org.example.mrj.util.SlugUtil;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,12 +33,14 @@ public class PartnerService {
 
     public ResponseEntity<ApiResponse<Partner>> create(String strPartner, MultipartFile photoFile) {
         ApiResponse<Partner> response = new ApiResponse<>();
+        Optional<Integer> maxOrderNum = partnerRepository.getMaxOrderNum();
         try {
             Partner partner = objectMapper.readValue(strPartner, Partner.class);
             partner.setPhoto(photoService.save(photoFile));
+            partner.setOrderNum(maxOrderNum.map(num -> num + 1).orElse(1));
             partner.setActive(true);
             Partner save = partnerRepository.save(partner);
-            String slug = save.getId() + "-" + save.getTitle();
+            String slug = save.getId() + "-" + SlugUtil.makeSlug(save.getTitle());
             partnerRepository.updateSlug(slug, save.getId());
             save.setSlug(slug);
             response.setData(save);
@@ -75,19 +80,18 @@ public class PartnerService {
     public ResponseEntity<ApiResponse<List<Partner>>> findAll() {
         ApiResponse<List<Partner>> response = new ApiResponse<>();
         response.setData(new ArrayList<>());
-        List<Partner> all = partnerRepository.findAll();
+        List<Partner> all = partnerRepository.findAllByOrderByOrderNum();
         all.forEach(partner -> response.getData().add(partner));
         response.setMessage("Found " + all.size() + " partner(s)");
         return ResponseEntity.status(200).body(response);
     }
 
-    public ResponseEntity<ApiResponse<List<PartnerDTO>>> findSixPartnerForMainPage() {
+    public ResponseEntity<ApiResponse<List<PartnerDTO>>> findPartnerForMainPage() {
         ApiResponse<List<PartnerDTO>> response = new ApiResponse<>();
         response.setData(new ArrayList<>());
-        List<Partner> all = partnerRepository.findAllByOrderByIdAsc();
+        List<Partner> all = partnerRepository.findAllByOrderByOrderNum();
         all.stream()
                 .filter(Partner::isActive)
-                .limit(6).toList()
                 .forEach(partner -> response.getData().add(new PartnerDTO(partner)));
         return ResponseEntity.status(200).body(response);
     }
@@ -102,60 +106,66 @@ public class PartnerService {
         return ResponseEntity.status(200).body(response);
     }
 
-//    public ResponseEntity<ApiResponse<Partner>> update(Partner newPartner){
-//        ApiResponse<Partner> response=new ApiResponse<>();
-//        partnerRepository.findById(newPartner.getId())
-//                .map(existingPartner -> {
-//                    if (newPartner.getTitle()!=null){
-//                        existingPartner.setTitle(newPartner.getTitle());
+    public ResponseEntity<ApiResponse<Partner>> update(Partner newPartner) {
+        ApiResponse<Partner> response = new ApiResponse<>();
+        return partnerRepository.findById(newPartner.getId())
+                .map(existingPartner -> {
+                    String slug = existingPartner.getId() + "-" + SlugUtil.makeSlug(existingPartner.getTitle());
+                    existingPartner.setSlug(slug);
+                    if (newPartner.getTitle() != null) {
+                        existingPartner.setTitle(newPartner.getTitle());
+                    }
+                    if (newPartner.getMainDescription() != null) {
+                        existingPartner.setMainDescription(newPartner.getMainDescription());
+                    }
+                    if (newPartner.getDescription() != null) {
+                        existingPartner.setDescription(newPartner.getDescription());
+                    }
+//                    if (newPartner.getOrderNum() != null) {
+//                         replaceOrderNum(newPartner.getOrderNum(), existingPartner.getOrderNum());
+//                         existingPartner.setOrderNum(newPartner.getOrderNum());
 //                    }
-//                    if (newPartner.getMainDescription()!=null){
-//                        existingPartner.setMainDescription(newPartner.getMainDescription());
-//                    }
-//                    if (newPartner.getDescription()!=null){
-//                        existingPartner.setDescription(newPartner.getDescription());
-//                    }
-//
-//                })
+                    response.setData(partnerRepository.save(existingPartner));
+                    return ResponseEntity.ok().body(response);
+                }).orElseGet(() -> {
+                    response.setMessage("Partner is not found by id: " + newPartner.getId());
+                    return ResponseEntity.status(404).body(response);
+                });
+    }
+
+//    private void replaceOrderNum(Integer orderNum, Integer oldOrderNum) {
+//        long count = partnerRepository.count();
+//        if (orderNum > count && orderNum <= 0) {
+//            throw new RuntimeException("Order number is invalid");
+//        }
+//        Optional<Partner> optionalPartner = partnerRepository.findByOrderNum(orderNum);
+//        if (optionalPartner.isPresent()) {
+//            Partner oldPartner = optionalPartner.get();
+//            oldPartner.setOrderNum(oldOrderNum);
+//            partnerRepository.save(oldPartner);
+//        }
 //    }
 
-//    public ResponseEntity<ApiResponse<Partner>> update(Long id, String newJson, MultipartFile newPhoto) {
-//        ApiResponse<Partner> response = new ApiResponse<>();
-//        Optional<Partner> optionalPartner = partnerRepository.findById(id);
-//        if (optionalPartner.isEmpty()) {
-//            response.setMessage("Partner is not found by id: " + id);
-//            return ResponseEntity.status(404).body(response);
-//        }
-//        String oldPhotoUrl = partnerRepository.findPhotoUrlById(id);
-//        String slug = partnerRepository.findSlugById(id);
-//        boolean active = optionalPartner.get().isActive();
-//        Partner newPartner = new Partner();
-//
-//        try {
-//            if (newJson != null) {
-//                newPartner = objectMapper.readValue(newJson, Partner.class);
-//                if (newPhoto == null || !(newPhoto.getSize() > 0)) {
-//                    newPartner.setPhotoUrl(oldPhotoUrl);
-//                }
-//                newPartner.setId(id);
-//                newPartner.setSlug(slug);
-//                newPartner.setActive(active);
-//            } else {
-//                newPartner = partnerRepository.findById(id).get();
-//            }
-//
-//            if (newPhoto != null && newPhoto.getSize() > 0) {
-//                Photo photo = photoService.save(newPhoto);
-//                newPartner.setPhotoUrl(photo.getHttpUrl());
-//            }
-//            Partner save = partnerRepository.save(newPartner);
-//            response.setData(save);
-//            return ResponseEntity.status(201).body(response);
-//        } catch (JsonProcessingException e) {
-//            response.setMessage(e.getMessage());
-//            return ResponseEntity.status(404).body(response);
-//        }
-//    }
+    public ResponseEntity<ApiResponse<List<Partner>>> changeOrder(List<PartnerWrapper> newPartnerList) {
+        ApiResponse<List<Partner>> response = new ApiResponse<>();
+        response.setData(new ArrayList<>());
+        List<Partner> dbAll = partnerRepository.findAll();
+        if (partnerRepository.findAll().size()!=newPartnerList.size()) {
+            response.setMessage("In database have: " + dbAll.size() + " partner(s). But you send " + newPartnerList.size() + " order number(s)");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        for (Partner db : partnerRepository.findAll()) {
+            Long dbId= db.getId();
+            for (PartnerWrapper newPartner : newPartnerList) {
+                if (newPartner.id().equals(dbId)){
+                    db.setOrderNum(newPartner.orderNum());
+                    response.getData().add(partnerRepository.save(db));
+                }
+            }
+        }
+        response.getData().sort(Comparator.comparing(Partner::getOrderNum));
+        return ResponseEntity.status(201).body(response);
+    }
 
     public ResponseEntity<ApiResponse<?>> deleteById(Long id) {
         ApiResponse<?> response = new ApiResponse<>();

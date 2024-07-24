@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.example.mrj.domain.entity.New;
+import org.example.mrj.domain.entity.Photo;
 
 @Data
 @AllArgsConstructor
@@ -13,22 +14,28 @@ import org.example.mrj.domain.entity.New;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class NewDTO {
 
+    Long id;
+
     String title;
 
     String date;
 
-    String mainPhotoUrl;
+    Photo photo;
 
     String slug;
 
     boolean active;
 
+    Integer orderNum;
+
     public NewDTO(New newness) {
+        this.id= newness.getId();
         this.title = newness.getTitle();
         this.date = newness.getDate();
-        this.mainPhotoUrl = newness.getMainPhotoUrl();
+        this.photo = newness.getPhoto();
         this.slug = newness.getSlug();
         this.active = newness.isActive();
+        this.orderNum= newness.getOrderNum();
     }
 
 }

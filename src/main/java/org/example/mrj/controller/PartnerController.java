@@ -1,6 +1,7 @@
 package org.example.mrj.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.mrj.domain.PartnerWrapper;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.dto.PartnerDTO;
 import org.example.mrj.domain.entity.Partner;
@@ -44,7 +45,7 @@ public class PartnerController {
 
     @GetMapping("/get-all-partner")
     public ResponseEntity<ApiResponse<List<PartnerDTO>>> findAllForMenuPage() {
-        return partnerService.findSixPartnerForMainPage();
+        return partnerService.findPartnerForMainPage();
     }
 
     @GetMapping("/get-others/{partnerSlug}")
@@ -54,14 +55,19 @@ public class PartnerController {
         return partnerService.findOtherPartnerBySlug(partnerSlug);
     }
 
-//    @PutMapping("/update/{id}")
-//    public ResponseEntity<ApiResponse<Partner>> update(
-//            @PathVariable Long id,
-//            @RequestParam(value = "json") String partner,
-//            @RequestPart(value = "photo") MultipartFile photo
-//    ) {
-//        return partnerService.update(id, partner, photo);
-//    }
+    @PutMapping("/update")
+    public ResponseEntity<ApiResponse<Partner>> update(
+            @RequestBody Partner partner
+    ) {
+        return partnerService.update(partner);
+    }
+
+    @PutMapping("/change-order")
+    public ResponseEntity<ApiResponse<List<Partner>>> changeOrderNum(
+            @RequestBody List<PartnerWrapper> list
+    ) {
+        return partnerService.changeOrder(list);
+    }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<ApiResponse<?>> delete(

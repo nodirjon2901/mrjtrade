@@ -2,6 +2,8 @@ package org.example.mrj.domain.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,13 +26,17 @@ public class New extends BaseEntity{
 
     String date;
 
-    String mainPhotoUrl;
+    @OneToOne
+    Photo photo;
 
-    List<String> photoUrls;
+    @OneToMany
+    List<Photo> gallery;
 
     @Column(unique = true)
     String slug;
 
     boolean active;
+
+    Integer orderNum;
 
 }
