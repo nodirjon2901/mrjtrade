@@ -27,6 +27,9 @@ public class Product2 extends BaseEntity
     @ElementCollection
     List<String> tag;
 
+    @Column(length = 500)
+    String shortDescription;
+
     @Column(length = 1000)
     String description;
 
