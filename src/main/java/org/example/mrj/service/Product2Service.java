@@ -98,6 +98,9 @@ public class Product2Service
         if (newProduct.getDescription() != null)
             fromDb.setDescription(newProduct.getDescription());
 
+        if (newProduct.getShortDescription() != null)
+            fromDb.setShortDescription(newProduct.getShortDescription());
+
         if (newProduct.getDiscount() != null)
             fromDb.setDiscount(newProduct.getDiscount());
 
@@ -135,8 +138,8 @@ public class Product2Service
                     {
                         if (dbItem.getId().equals(newItem.getId()))
                         {
-                            dbItem.setDescription(newItem.getDescription());
-                            dbItem.setParameterName(newItem.getParameterName());
+                            if (dbItem.getDescription() != null) dbItem.setDescription(newItem.getDescription());
+                            if (dbItem.getParameterName() != null) dbItem.setParameterName(newItem.getParameterName());
                         }
                     }
                 } else

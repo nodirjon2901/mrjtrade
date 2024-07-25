@@ -2,6 +2,7 @@ package org.example.mrj.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.mrj.domain.dto.ApiResponse;
+import org.example.mrj.domain.dto.CategoryItemDTO;
 import org.example.mrj.domain.dto.ProductDTO;
 import org.example.mrj.domain.entity.Category;
 import org.example.mrj.domain.entity.CategoryItem;
@@ -42,6 +43,13 @@ public class CategoryController
     {
         return categoryService.getItem(slug);
     }
+
+    @GetMapping("name-list")
+    public ResponseEntity<ApiResponse<List<CategoryItemDTO>>> getNameList()
+    {
+        return categoryService.getNameList();
+    }
+
 
     @PutMapping
     public ResponseEntity<ApiResponse<Category>> update(
