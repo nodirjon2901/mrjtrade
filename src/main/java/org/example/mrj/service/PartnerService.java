@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.mrj.domain.PartnerWrapper;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.dto.PartnerDTO;
+import org.example.mrj.domain.dto.PartnerForProductDTO;
 import org.example.mrj.domain.entity.Partner;
 import org.example.mrj.repository.PartnerRepository;
 import org.example.mrj.util.SlugUtil;
@@ -86,6 +87,14 @@ public class PartnerService {
         return ResponseEntity.status(200).body(response);
     }
 
+    public ResponseEntity<ApiResponse<List<PartnerForProductDTO>>> findAllPartForProduct() {
+        ApiResponse<List<PartnerForProductDTO>> response = new ApiResponse<>();
+        response.setData(new ArrayList<>());
+        List<Partner> all = partnerRepository.findAll();
+        all.forEach(partner -> response.getData().add(new PartnerForProductDTO(partner)));
+        return ResponseEntity.status(200).body(response);
+    }
+
     public ResponseEntity<ApiResponse<List<PartnerDTO>>> findPartnerForMainPage() {
         ApiResponse<List<PartnerDTO>> response = new ApiResponse<>();
         response.setData(new ArrayList<>());
@@ -133,14 +142,14 @@ public class PartnerService {
         ApiResponse<List<Partner>> response = new ApiResponse<>();
         response.setData(new ArrayList<>());
         List<Partner> dbAll = partnerRepository.findAll();
-        if (partnerRepository.findAll().size()!=newPartnerList.size()) {
+        if (partnerRepository.findAll().size() != newPartnerList.size()) {
             response.setMessage("In database have: " + dbAll.size() + " partner(s). But you send " + newPartnerList.size() + " order number(s)");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
         for (Partner db : partnerRepository.findAll()) {
-            Long dbId= db.getId();
+            Long dbId = db.getId();
             for (PartnerWrapper newPartner : newPartnerList) {
-                if (newPartner.id().equals(dbId)){
+                if (newPartner.id().equals(dbId)) {
                     db.setOrderNum(newPartner.orderNum());
                     response.getData().add(partnerRepository.save(db));
                 }

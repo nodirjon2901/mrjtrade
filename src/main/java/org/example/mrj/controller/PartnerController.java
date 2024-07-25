@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.mrj.domain.PartnerWrapper;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.dto.PartnerDTO;
+import org.example.mrj.domain.dto.PartnerForProductDTO;
 import org.example.mrj.domain.entity.Partner;
 import org.example.mrj.domain.entity.PartnerHeader;
 import org.example.mrj.service.PartnerHeaderService;
@@ -41,6 +42,11 @@ public class PartnerController {
     @GetMapping("/get-all")
     public ResponseEntity<ApiResponse<List<Partner>>> findAll() {
         return partnerService.findAll();
+    }
+
+    @GetMapping("/get-all-partner-name")
+    public ResponseEntity<ApiResponse<List<PartnerForProductDTO>>> findAllPartnerForProduct() {
+        return partnerService.findAllPartForProduct();
     }
 
     @GetMapping("/get-all-partner")
