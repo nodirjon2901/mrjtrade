@@ -84,24 +84,6 @@ public class SearchSpecification {
         };
     }
 
-    public Specification<Event> eventContains(String searchTerm) {
-        String[] searchTerms = searchTerm.toLowerCase().split(" ");
-        return (root, query, criteriaBuilder) -> {
-            Specification<Event> spec = null;
-            for (String term : searchTerms) {
-                Specification<Event> tempSpec = (root1, query1, criteriaBuilder1) -> criteriaBuilder.or(
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), "%" + term + "%"),
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), "%" + term + "%")
-                );
-                if (spec == null) {
-                    spec = tempSpec;
-                } else {
-                    spec = spec.or(tempSpec);
-                }
-            }
-            return Objects.requireNonNull(spec).toPredicate(root, query, criteriaBuilder);
-        };
-    }
 
     public Specification<Partner> partnerContains(String searchTerm) {
         String[] searchTerms = searchTerm.toLowerCase().split(" ");

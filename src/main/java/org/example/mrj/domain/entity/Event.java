@@ -1,39 +1,48 @@
 package org.example.mrj.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import java.util.Map;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity(name = "event")
-public class Event extends BaseEntity {
+public class Event extends BaseEntity
+{
 
-    String title;
+    String heading;
 
-    @Column(length = 3000)
-    String description;
-
-    @Column(unique = true)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     String slug;
 
-    boolean active;
-
     @OneToOne
-    Photo photo;
+    @JsonProperty(value = "photo", access = JsonProperty.Access.READ_ONLY)
+    Photo coverPhoto; // Main photo
 
-    @OneToOne(cascade = CascadeType.ALL)
-    EventInformation eventInformation;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    List<EventAbout> abouts;
 
-    @ManyToOne
-    EventCity city;
+    String dateFrom;
+    String dateTo;
 
+    String timeFrom;
+    String timeTo;
+
+
+    String organizer;
+
+    String city;
+
+    String address;
 }
