@@ -23,7 +23,7 @@ public class EventSearchDTO {
 
     public EventSearchDTO(Event event) {
         this.id = event.getId();
-        this.title = event.getTitle();
+        this.title = event.getHeading();
         this.slug = event.getSlug();
         this.dtoName = "Event";
     }

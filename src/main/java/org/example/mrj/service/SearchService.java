@@ -55,11 +55,6 @@ public class SearchService {
                 .filter(New::isActive)
                 .map(NewSearchDTO::new).toList());
 
-        Specification<Event> eventSpec = searchSpecification.eventContains(searchTerm);
-        results.addAll(eventRepository.findAll(eventSpec).stream()
-                .filter(Event::isActive)
-                .map(EventSearchDTO::new).toList());
-
         Specification<Partner> partnerSpec = searchSpecification.partnerContains(searchTerm);
         results.addAll(partnerRepository.findAll(partnerSpec).stream()
                 .filter(Partner::isActive)
