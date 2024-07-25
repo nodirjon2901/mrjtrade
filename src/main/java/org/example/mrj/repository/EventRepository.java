@@ -1,35 +1,28 @@
 package org.example.mrj.repository;
 
 import org.example.mrj.domain.entity.Event;
-import org.example.mrj.domain.entity.New;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecificationExecutor<Event> {
+public interface EventRepository extends JpaRepository<Event, Long>
+{
+    Optional<Event> findBySlug(String slug);
 
-    @Query(value = "select photo_url from event where id=:id", nativeQuery = true)
-    String findPhotoUrlById(@Param("id")Long id);
+    List<Event> findByCityEqualsIgnoreCase(String city, Pageable pageable);
 
+    @Query(value = "SELECT DISTINCT city FROM event", nativeQuery = true)
+    List<String> getCity();
+
+    @Transactional
     @Modifying
-    @Query(value = "update event set active=:active where id=:id", nativeQuery = true)
-    void changeActive(@Param("id")Long id, boolean active);
-
-    @Modifying
-    @Query(value = "update event set slug = :slug where id = :id", nativeQuery = true)
-    void updateSlug(@Param("slug") String slug, @Param("id") Long newId);
-
-    @Query(value = "select slug from event where id = :id", nativeQuery = true)
-    String findSlugById(@Param("id") Long eventId);
-
-
-    @Query(value = "select * from event where slug = :slug", nativeQuery = true)
-    Optional<Event> findBySlug(@Param("slug") String slug);
-
+    @Query(value = "DELETE FROM event")
+    void deleteCascade(Long aboutId);
 }
