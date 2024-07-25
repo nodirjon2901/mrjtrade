@@ -121,10 +121,6 @@ public class PartnerService {
                     if (newPartner.getDescription() != null) {
                         existingPartner.setDescription(newPartner.getDescription());
                     }
-//                    if (newPartner.getOrderNum() != null) {
-//                         replaceOrderNum(newPartner.getOrderNum(), existingPartner.getOrderNum());
-//                         existingPartner.setOrderNum(newPartner.getOrderNum());
-//                    }
                     response.setData(partnerRepository.save(existingPartner));
                     return ResponseEntity.ok().body(response);
                 }).orElseGet(() -> {
@@ -132,19 +128,6 @@ public class PartnerService {
                     return ResponseEntity.status(404).body(response);
                 });
     }
-
-//    private void replaceOrderNum(Integer orderNum, Integer oldOrderNum) {
-//        long count = partnerRepository.count();
-//        if (orderNum > count && orderNum <= 0) {
-//            throw new RuntimeException("Order number is invalid");
-//        }
-//        Optional<Partner> optionalPartner = partnerRepository.findByOrderNum(orderNum);
-//        if (optionalPartner.isPresent()) {
-//            Partner oldPartner = optionalPartner.get();
-//            oldPartner.setOrderNum(oldOrderNum);
-//            partnerRepository.save(oldPartner);
-//        }
-//    }
 
     public ResponseEntity<ApiResponse<List<Partner>>> changeOrder(List<PartnerWrapper> newPartnerList) {
         ApiResponse<List<Partner>> response = new ApiResponse<>();

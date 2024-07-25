@@ -1,0 +1,16 @@
+package org.example.mrj.repository;
+
+import org.example.mrj.domain.entity.NewOption;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public interface NewOptionRepository extends JpaRepository<NewOption, Long> {
+
+    @Query(value = "SELECT MAX(order_num) FROM new_option", nativeQuery = true)
+    Optional<Integer> getMaxOrderNum();
+
+}

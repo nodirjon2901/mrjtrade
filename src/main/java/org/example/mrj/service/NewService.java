@@ -10,8 +10,10 @@ import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.dto.NewDTO;
 import org.example.mrj.domain.entity.AboutUsHeader;
 import org.example.mrj.domain.entity.New;
+import org.example.mrj.domain.entity.NewOption;
 import org.example.mrj.domain.entity.Partner;
 import org.example.mrj.exception.NotFoundException;
+import org.example.mrj.repository.NewOptionRepository;
 import org.example.mrj.repository.NewRepository;
 import org.example.mrj.util.SlugUtil;
 import org.springframework.data.domain.Page;
@@ -22,10 +24,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
 @Service
 @Transactional
@@ -34,28 +36,44 @@ public class NewService {
 
     private final NewRepository newRepository;
 
+    private final NewOptionRepository newOptionRepository;
+
     private final PhotoService photoService;
 
     private final ObjectMapper objectMapper;
 
-    public ResponseEntity<ApiResponse<New>> create(String strNew, MultipartFile mainPhoto, List<MultipartFile> photoFiles) {
+    public ResponseEntity<ApiResponse<New>> create(String strNew, MultipartFile photoFile) {
         ApiResponse<New> response = new ApiResponse<>();
         Optional<Integer> maxOrderNum = newRepository.getMaxOrderNum();
         try {
             New newness = objectMapper.readValue(strNew, New.class);
-            newness.setGallery(new ArrayList<>());
-            newness.setActive(true);
             newness.setOrderNum(maxOrderNum.map(num -> num + 1).orElse(1));
-            newness.setPhoto(photoService.save(mainPhoto));
-            for (MultipartFile photo : photoFiles) {
-                newness.getGallery().add(photoService.save(photo));
-            }
+            newness.setActive(true);
+            newness.setPhoto(photoService.save(photoFile));
             New save = newRepository.save(newness);
             String slug = save.getId() + "-" + SlugUtil.makeSlug(save.getTitle());
             newRepository.updateSlug(slug, save.getId());
             save.setSlug(slug);
             response.setData(save);
             return ResponseEntity.status(200).body(response);
+        } catch (JsonProcessingException e) {
+            response.setMessage(e.getMessage());
+            return ResponseEntity.status(409).body(response);
+        }
+    }
+
+    public ResponseEntity<ApiResponse<New>> addNewOption(Long newnessId, String strNewOption, MultipartFile photoFile) {
+        ApiResponse<New> response = new ApiResponse<>();
+        New newness = newRepository.findById(newnessId).orElseThrow(() -> new NotFoundException("New is not found by id: " + newnessId));
+        Optional<Integer> maxOrderNum = newOptionRepository.getMaxOrderNum();
+        try {
+            NewOption newOption = objectMapper.readValue(strNewOption, NewOption.class);
+            newOption.setOrderNum(maxOrderNum.map(num -> num + 1).orElse(1));
+            newOption.setPhoto(photoService.save(photoFile));
+            newOption.setNewness(newness);
+            newOptionRepository.save(newOption);
+            response.setData(newness);
+            return ResponseEntity.status(201).body(response);
         } catch (JsonProcessingException e) {
             response.setMessage(e.getMessage());
             return ResponseEntity.status(409).body(response);
@@ -137,10 +155,20 @@ public class NewService {
         if (newness.getBody() != null) {
             existingNew.setBody(newness.getBody());
         }
-        if (newness.getDate() != null) {
-            existingNew.setDate(newness.getDate());
-        }
         response.setData(newRepository.save(existingNew));
+        return ResponseEntity.ok().body(response);
+    }
+
+    public ResponseEntity<ApiResponse<New>> updateNewOption(NewOption newOption) {
+        ApiResponse<New> response = new ApiResponse<>();
+        NewOption existingNewOption = newOptionRepository.findById(newOption.getId()).orElseThrow(() -> new NotFoundException("NewOption is not found by id: " + newOption.getId()));
+        if (newOption.getHeading() != null) {
+            existingNewOption.setHeading(newOption.getHeading());
+        }
+        if (newOption.getText() != null) {
+            existingNewOption.setText(newOption.getHeading());
+        }
+        response.setData(newOptionRepository.save(existingNewOption).getNewness());
         return ResponseEntity.ok().body(response);
     }
 
@@ -173,6 +201,39 @@ public class NewService {
         }
         newRepository.deleteById(id);
         response.setMessage("Successfully deleted");
+        return ResponseEntity.status(200).body(response);
+    }
+
+    public ResponseEntity<ApiResponse<List<NewOption>>> changeNewOptionOrder(List<NewOption> newOptionList) {
+        ApiResponse<List<NewOption>> response = new ApiResponse<>();
+        New newness = newOptionRepository.findById(newOptionList.get(0).getId()).orElseThrow(() -> new NotFoundException("Block is not found with index: " + 0)).getNewness();
+        response.setData(new ArrayList<>());
+        List<NewOption> dbAll = newness.getNewOptions();
+        if (dbAll.size() != newOptionList.size()) {
+            response.setMessage("The number of blocks in New is not equal to the number of blocks you sent");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        for (int i = 0; i < newOptionList.size(); i++) {
+            NewOption newOption = newOptionList.get(i);
+            NewOption dbOption = dbAll.get(i);
+            dbOption.setOrderNum(newOption.getOrderNum());
+            newOptionRepository.save(dbOption);
+        }
+        newness.setNewOptions(newness.getNewOptions()
+                .stream()
+                .sorted(Comparator.comparing(NewOption::getOrderNum))
+                .collect(Collectors.toList()));
+        response.setData(newRepository.save(newness).getNewOptions());
+        return ResponseEntity.ok().body(response);
+    }
+
+    public ResponseEntity<ApiResponse<?>> deleteBlockById(Long newOptionId) {
+        ApiResponse<?> response = new ApiResponse<>();
+        if (!newOptionRepository.existsById(newOptionId)) {
+            throw new NotFoundException("Block is not found by id: " + newOptionId);
+        }
+        newOptionRepository.deleteById(newOptionId);
+        response.setMessage("Successfully deleted!");
         return ResponseEntity.status(200).body(response);
     }
 

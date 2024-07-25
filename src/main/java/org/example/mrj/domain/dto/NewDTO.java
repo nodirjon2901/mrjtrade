@@ -31,11 +31,11 @@ public class NewDTO {
     public NewDTO(New newness) {
         this.id= newness.getId();
         this.title = newness.getTitle();
-        this.date = newness.getDate();
+        this.date = String.valueOf(newness.getCreateDate());
         this.photo = newness.getPhoto();
         this.slug = newness.getSlug();
         this.active = newness.isActive();
-        this.orderNum= newness.getOrderNum();
+        this.orderNum=newness.getOrderNum();
     }
 
 }

@@ -5,6 +5,7 @@ import org.example.mrj.domain.NewnessWrapper;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.dto.NewDTO;
 import org.example.mrj.domain.entity.New;
+import org.example.mrj.domain.entity.NewOption;
 import org.example.mrj.service.NewService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -23,10 +24,18 @@ public class NewController {
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<New>> createNew(
             @RequestParam(value = "json") String newness,
-            @RequestPart(value = "mainPhoto") MultipartFile mainPhoto,
-            @RequestPart(value = "photos") List<MultipartFile> photos
+            @RequestPart(value = "photo") MultipartFile photo
     ) {
-        return newService.create(newness, mainPhoto, photos);
+        return newService.create(newness, photo);
+    }
+
+    @PostMapping("/add-block/{newId}")
+    public ResponseEntity<ApiResponse<New>> addBlock(
+            @PathVariable Long newId,
+            @RequestParam(value = "json") String newOption,
+            @RequestPart(value = "photo") MultipartFile photo
+    ) {
+        return newService.addNewOption(newId, newOption, photo);
     }
 
     @GetMapping("/get/{slug}")
@@ -68,11 +77,25 @@ public class NewController {
         return newService.changeOrder(newnessWrapperList);
     }
 
+    @PutMapping("/change-block-order")
+    public ResponseEntity<ApiResponse<List<NewOption>>> changeOrderBlocks(
+            @RequestBody List<NewOption> newOptionList
+    ) {
+        return newService.changeNewOptionOrder(newOptionList);
+    }
+
     @PutMapping("/update")
     public ResponseEntity<ApiResponse<New>> update(
             @RequestBody New newness
     ) {
         return newService.update(newness);
+    }
+
+    @PutMapping("/update-block")
+    public ResponseEntity<ApiResponse<New>> updateBlock(
+            @RequestBody NewOption newOption
+    ) {
+        return newService.updateNewOption(newOption);
     }
 
     @PutMapping("/change-active/{id}")
@@ -87,6 +110,13 @@ public class NewController {
             @PathVariable Long id
     ) {
         return newService.deleteById(id);
+    }
+
+    @DeleteMapping("/delete-block/{id}")
+    public ResponseEntity<ApiResponse<?>> deleteBlock(
+            @PathVariable Long id
+    ) {
+        return newService.deleteBlockById(id);
     }
 
 

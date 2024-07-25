@@ -1,15 +1,15 @@
 package org.example.mrj.domain.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -24,18 +24,20 @@ public class New extends BaseEntity{
     @Column(length = 5000)
     String body;
 
-    String date;
-
     @OneToOne
     Photo photo;
 
-    @OneToMany
-    List<Photo> gallery;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "newness")
+    List<NewOption> newOptions;
 
     @Column(unique = true)
     String slug;
 
     boolean active;
+
+    @CreationTimestamp
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    Date createDate;
 
     Integer orderNum;
 
