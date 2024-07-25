@@ -18,10 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CategoryController
 {
-
     private final CategoryService categoryService;
-
-    private final ProductService productService;
 
     @PostMapping("/add")
     public ResponseEntity<ApiResponse<Category>> add(
@@ -58,14 +55,6 @@ public class CategoryController
             @PathVariable("item-id") Long itemId)
     {
         return categoryService.delete(itemId);
-    }
-
-    @GetMapping("/products/{slug}")
-    public ResponseEntity<ApiResponse<List<ProductDTO>>> getAllProductBySlug(
-            @PathVariable String slug
-    )
-    {
-        return productService.findAllByCategorySlug(slug);
     }
 
 }
