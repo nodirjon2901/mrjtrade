@@ -18,4 +18,9 @@ import java.util.List;
 public class Catalog extends BaseEntity {
 
     String name;
+
+    public Catalog(Long id)
+    {
+        super(id);
+    }
 }

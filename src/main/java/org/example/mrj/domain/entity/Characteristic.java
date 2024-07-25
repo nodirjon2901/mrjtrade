@@ -2,34 +2,22 @@ package org.example.mrj.domain.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Entity(name = "partner")
-public class Partner extends BaseEntity
+
+@Entity
+@Table(name = "characteristic")
+public class Characteristic extends BaseEntity
 {
+    String parameterName;
 
-    String title;
-
-    @Column(length = 1000)
+    @Column(length = 500)
     String description;
-
-    String photoUrl;
-
-    @Column(unique = true)
-    String slug;
-
-    boolean active;
-
-    public Partner(Long id)
-    {
-        super(id);
-    }
 }

@@ -2,7 +2,7 @@ package org.example.mrj.controller;
 
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.exception.IllegalPhotoTypeException;
-import org.example.mrj.exception.PhotoNotFoundException;
+import org.example.mrj.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -16,9 +16,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>("Illegal photo: " + e.getMessage(), null));
     }
 
-    @ExceptionHandler(PhotoNotFoundException.class)
-    public ResponseEntity<ApiResponse<?>> handlePhotoNotFoundException(PhotoNotFoundException e) {
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ApiResponse<?>> handleNotFoundException(NotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(e.getMessage(), null));
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiResponse<?>> handleOtherException(RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(e.getMessage(), null));
     }
 
 }
