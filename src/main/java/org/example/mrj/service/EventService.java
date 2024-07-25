@@ -5,17 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.mrj.domain.dto.ApiResponse;
-import org.example.mrj.domain.dto.CheckInFormDTO;
-import org.example.mrj.domain.dto.EventDTO;
 import org.example.mrj.domain.entity.Event;
-import org.example.mrj.domain.entity.EventCity;
+import org.example.mrj.domain.entity.EventAbout;
 import org.example.mrj.exception.NotFoundException;
-import org.example.mrj.repository.EventCityRepository;
 import org.example.mrj.repository.EventRepository;
-import org.example.mrj.util.SlugUtil;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,166 +25,154 @@ import java.util.Optional;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class EventService {
+public class EventService
+{
 
     private final EventRepository eventRepository;
-
-    private final EventCityRepository cityRepository;
 
     private final ObjectMapper objectMapper;
 
     private final PhotoService photoService;
 
-    public ResponseEntity<ApiResponse<Event>> create(Long cityId, String json, MultipartFile newPhoto) {
+    public ResponseEntity<ApiResponse<Event>> add(String json, MultipartFile photo)
+    {
         ApiResponse<Event> response = new ApiResponse<>();
-        Optional<EventCity> cityOptional = cityRepository.findById(cityId);
-        if (cityOptional.isEmpty()) {
-            response.setMessage("City is not found by city id: " + cityId);
-            return ResponseEntity.status(404).body(response);
-        }
-        try {
+        try
+        {
             Event event = objectMapper.readValue(json, Event.class);
-            event.setActive(true);
-            event.setCity(cityOptional.get());
-            event.setPhoto(photoService.save(newPhoto));
-            Event save = eventRepository.save(event);
-            String slug = save.getId() + "-" + SlugUtil.makeSlug(event.getTitle());
-            eventRepository.updateSlug(slug, save.getId());
-            save.setSlug(slug);
-            response.setData(save);
-            return ResponseEntity.status(200).body(response);
-        } catch (JsonProcessingException e) {
-            response.setMessage(e.getMessage());
-            return ResponseEntity.status(401).body(response);
+            Long id = eventRepository.save(new Event()).getId();
+            event.setCoverPhoto(photoService.save(photo));
+            event.setId(id);
+            event.setSlug(id + "-" + event.getHeading());
+            response.setData(eventRepository.save(event));
+            response.setMessage("Added");
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (JsonProcessingException e)
+        {
+            throw new RuntimeException("Failed to parse json: " + e.getMessage());
         }
     }
 
-    public ResponseEntity<ApiResponse<Event>> findById(Long id) {
+    public ResponseEntity<ApiResponse<Event>> get(String slug)
+    {
         ApiResponse<Event> response = new ApiResponse<>();
-        Optional<Event> optionalEvent = eventRepository.findById(id);
-        if (optionalEvent.isEmpty()) {
-            response.setMessage("Event is not found by id: " + id);
-            return ResponseEntity.status(404).body(response);
-        }
-        Event event = optionalEvent.get();
-        response.setData(event);
+        Optional<Event> bySlug = eventRepository.findBySlug(slug);
+        if (bySlug.isEmpty())
+            throw new NotFoundException("Event with slug \'" + slug + "\' not found");
+        response.setData(bySlug.get());
         response.setMessage("Found");
-        return ResponseEntity.status(200).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    public ResponseEntity<ApiResponse<Event>> findBySlug(String slug) {
-        ApiResponse<Event> response = new ApiResponse<>();
-        Optional<Event> optionalEvent = eventRepository.findBySlug(slug);
-        if (optionalEvent.isEmpty()) {
-            response.setMessage("Event is not found by slug: " + slug);
-            return ResponseEntity.status(404).body(response);
-        }
-        Event event = optionalEvent.get();
-        response.setMessage("Found");
-        response.setData(event);
-        return ResponseEntity.status(200).body(response);
-    }
-
-    public ResponseEntity<ApiResponse<CheckInFormDTO>> findCheckInForm(String eventSlug) {
-        ApiResponse<CheckInFormDTO> response = new ApiResponse<>();
-        Optional<Event> optionalEvent = eventRepository.findBySlug(eventSlug);
-        if (optionalEvent.isEmpty()) {
-            response.setMessage("Event is not found by slug: " + eventSlug);
-            return ResponseEntity.status(404).body(response);
-        }
-        Event event = optionalEvent.get();
-        response.setData(new CheckInFormDTO(event.getEventInformation()));
-        return ResponseEntity.status(200).body(response);
-    }
-
-    public ResponseEntity<ApiResponse<List<EventDTO>>> findAll() {
-        ApiResponse<List<EventDTO>> response = new ApiResponse<>();
-        response.setData(new ArrayList<>());
-        List<Event> all = eventRepository.findAll();
-        all.forEach(event -> response.getData().add(new EventDTO(event)));
-        response.setMessage("Found " + all.size() + " event(s)");
-        return ResponseEntity.status(200).body(response);
-    }
-
-    public ResponseEntity<ApiResponse<List<EventDTO>>> findAllSimilar(String eventSlug) {
-        ApiResponse<List<EventDTO>> response = new ApiResponse<>();
-        Optional<Event> optionalEvent = eventRepository.findBySlug(eventSlug);
-        if (optionalEvent.isEmpty()) {
-            response.setMessage("Event is not found by slug: " + eventSlug);
-            return ResponseEntity.status(404).body(response);
-        }
-        response.setData(new ArrayList<>());
-        EventCity city = optionalEvent.get().getCity();
-        List<Event> all = eventRepository.findAll();
-        all.stream()
-                .filter(event -> event.getCity().getId().equals(city.getId()) && !event.getSlug().equals(eventSlug))
-                .toList()
-                .forEach(event -> response.getData().add(new EventDTO(event)));
-        return ResponseEntity.status(200).body(response);
-    }
-
-    public ResponseEntity<ApiResponse<Page<EventDTO>>> findAllByPageNation(int page, int size) {
-        ApiResponse<Page<EventDTO>> response = new ApiResponse<>();
-        Pageable pageable = PageRequest.of(page - 1, size);
-        Page<Event> all = eventRepository.findAll(pageable);
-        Page<EventDTO> map = all.map(EventDTO::new);
-        response.setData(map);
-        return ResponseEntity.status(200).body(response);
-    }
-
-    public ResponseEntity<ApiResponse<List<Event>>> findAllByCityId(Long cityId) {
+    public ResponseEntity<ApiResponse<List<Event>>> getAll(String city, int page, int size, String[] sort)
+    {
         ApiResponse<List<Event>> response = new ApiResponse<>();
-        if (!cityRepository.existsById(cityId)) {
-            response.setMessage("City is not found by id: " + cityId);
-            return ResponseEntity.status(404).body(response);
+        List<Event> all = new ArrayList<>();
+
+        Sort.Direction direction = Sort.Direction.fromString(sort[1]);
+        Sort sortOrder = Sort.by(direction, sort[0]);
+
+        page = Math.max(page - 1, 0); // Pagination Default to 1 instead of 0
+        Pageable pageable = PageRequest.of(page, size, sortOrder);
+
+        if (city == null)
+        {
+            all = eventRepository.findAll(pageable).getContent();
+        } else
+        {
+            all = eventRepository.findByCityEqualsIgnoreCase(city, pageable);
         }
-        response.setData(new ArrayList<>());
-        List<Event> all = eventRepository.findAll();
-        all.stream()
-                .filter(event -> event.getCity().getId().equals(cityId))
-                .toList()
-                .forEach(event -> response.getData().add(event));
-        return ResponseEntity.status(200).body(response);
+        response.setData(all);
+        response.setMessage("Found " + all.size() + " event(s)");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    public ResponseEntity<ApiResponse<Event>> update(Event event) {
+    public ResponseEntity<ApiResponse<List<String>>> getCityList()
+    {
+        ApiResponse<List<String>> response = new ApiResponse<>();
+        response.setData(eventRepository.getCity());
+        response.setMessage("Found " + response.getData().size() + " event(s)");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    public ResponseEntity<ApiResponse<Event>> update(Event newEvent)
+    {
         ApiResponse<Event> response = new ApiResponse<>();
-        Event existingEvent = eventRepository.findById(event.getId()).orElseThrow(() -> new NotFoundException("Event is not found by id: " + event.getId()));
-        if (event.getTitle() != null) {
-            existingEvent.setTitle(event.getTitle());
-            String slug = existingEvent.getId() + "-" + SlugUtil.makeSlug(existingEvent.getTitle());
-            existingEvent.setTitle(slug);
+        Optional<Event> byId = eventRepository.findById(newEvent.getId());
+        if (byId.isEmpty())
+            throw new NotFoundException("Event not found with id " + newEvent.getId());
+
+        Event fromDB = byId.get();
+
+        if (newEvent.getHeading() != null)
+        {
+            fromDB.setHeading(newEvent.getHeading());
+            fromDB.setSlug(fromDB.getId() + "-" + fromDB.getHeading());
         }
-        if (event.getDescription() != null) {
-            existingEvent.setDescription(event.getDescription());
+
+        if (newEvent.getDateFrom() != null) fromDB.setDateFrom(newEvent.getDateFrom());
+        if (newEvent.getDateTo() != null) fromDB.setDateTo(newEvent.getDateTo());
+        if (newEvent.getTimeFrom() != null) fromDB.setTimeFrom(newEvent.getTimeFrom());
+        if (newEvent.getTimeTo() != null) fromDB.setTimeTo(newEvent.getTimeTo());
+        if (newEvent.getOrganizer() != null) fromDB.setOrganizer(newEvent.getOrganizer());
+        if (newEvent.getCity() != null) fromDB.setCity(newEvent.getCity());
+        if (newEvent.getAddress() != null) fromDB.setAddress(newEvent.getAddress());
+        if (newEvent.getAbouts() != null)
+        {
+            List<EventAbout> newEventAbouts = newEvent.getAbouts();
+            List<EventAbout> dbAbouts = fromDB.getAbouts();
+            for (EventAbout newEventAbout : newEventAbouts)
+            {
+                Long id = newEventAbout.getId();
+                for (EventAbout dbAbout : dbAbouts)
+                {
+                    if (dbAbout.getId().equals(id))
+                    {
+                        dbAbout.setHeading(newEventAbout.getHeading());
+                        dbAbout.setText(newEventAbout.getText());
+                    }
+                }
+                if (id == null)
+                {
+                    dbAbouts.add(newEventAbout);
+                }
+            }
         }
-        response.setData(eventRepository.save(existingEvent));
-        return ResponseEntity.ok().body(response);
+
+        response.setData(eventRepository.save(fromDB));
+        response.setMessage("Updated");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    public ResponseEntity<ApiResponse<?>> changeActive(Long id) {
+    public ResponseEntity<ApiResponse<?>> delete(Long id)
+    {
         ApiResponse<?> response = new ApiResponse<>();
-        Optional<Event> optionalEvent = eventRepository.findById(id);
-        if (optionalEvent.isEmpty()) {
-            response.setMessage("Event is not found by id: " + id);
-            return ResponseEntity.status(404).body(response);
-        }
-        Event event = optionalEvent.get();
-        boolean active = !event.isActive();
-        eventRepository.changeActive(id, active);
-        response.setMessage("Successfully changed! Current event active: " + active);
-        return ResponseEntity.status(200).body(response);
-    }
+        if (!eventRepository.existsById(id))
+            throw new NotFoundException("Event not found with id " + id);
 
-    public ResponseEntity<ApiResponse<?>> delete(Long id) {
-        ApiResponse<?> response = new ApiResponse<>();
-        if (eventRepository.findById(id).isEmpty()) {
-            response.setMessage("Event is not found by id: " + id);
-            return ResponseEntity.status(404).body(response);
-        }
         eventRepository.deleteById(id);
-        response.setMessage("Successfully deleted!");
-        return ResponseEntity.status(200).body(response);
+        response.setMessage("Deleted");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    public ResponseEntity<ApiResponse<?>> deleteAbout(Long aboutId)
+    {
+        ApiResponse<?> response = new ApiResponse<>();
+        List<Event> fromDB = eventRepository.findAll();
+        for (int i = 0; i < fromDB.size(); i++)
+        {
+            List<EventAbout> abouts = fromDB.get(i).getAbouts();
+            for (int j = 0, aboutsSize = abouts.size(); j < aboutsSize; j++)
+            {
+                if (abouts.get(j).getId().equals(aboutId))
+                {
+                    abouts.remove(j);
+                    eventRepository.save(fromDB.get(i));
+                    break;
+                }
+            }
+        }
+        response.setMessage("Deleted");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }

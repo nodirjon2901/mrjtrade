@@ -8,6 +8,7 @@ import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.entity.Catalog;
 import org.example.mrj.domain.entity.Category;
 import org.example.mrj.domain.entity.CategoryItem;
+import org.example.mrj.repository.CatalogRepository;
 import org.example.mrj.repository.CategoryItemRepository;
 import org.example.mrj.repository.CategoryRepository;
 import org.example.mrj.util.SlugUtil;
@@ -32,6 +33,7 @@ public class CategoryService
 
     private final PhotoService photoService;
     private final CategoryItemRepository categoryItemRepository;
+    private final CatalogRepository catalogRepository;
 
     public ResponseEntity<ApiResponse<Category>> addItem(String json, MultipartFile photo)
     {
@@ -130,20 +132,43 @@ public class CategoryService
                             item.setSlug(SlugUtil.makeSlug(newItem.getTitle()));
                         }
                 }
+
+                //Update only existing catalog not ADD !!!
                 if (newItem.getCatalogList() != null)
                 {
-                    for (CategoryItem item : fromDBItemList)
-                        if (item.getId().equals(newItem.getId()))
+                    for (CategoryItem fromDbItem : fromDBItemList)
+                        if (fromDbItem.getId().equals(newItem.getId()))
                         {
-                            for (Catalog fromDb : item.getCatalogList())
+                            for (Catalog fromDb : fromDbItem.getCatalogList())
                             {
                                 for (Catalog newItemCatalog : newItem.getCatalogList())
                                 {
                                     if (fromDb.getId().equals(newItemCatalog.getId()))
-                                        fromDb.setName(newItemCatalog.getName());
+                                    {
+                                        if (newItemCatalog.getName() != null)
+                                            fromDb.setName(newItemCatalog.getName());
+                                    }
                                 }
                             }
                         }
+
+                    //Add only new added catalog
+                    for (Catalog newCatalog : newItem.getCatalogList())
+                    {
+                        // When id not given , added.
+                        if (newCatalog.getId() == null)
+                        {
+                            for (CategoryItem fromDb : fromDBItemList)
+                            {
+                                if (fromDb.getId().equals(newItem.getId()))
+                                {
+                                    Catalog catalog = catalogRepository.save(newCatalog);
+                                    fromDb.getCatalogList().add(catalog);
+                                }
+                            }
+                        }
+                    }
+
                 }
                 if (newItem.getActive() != null)
                 {
