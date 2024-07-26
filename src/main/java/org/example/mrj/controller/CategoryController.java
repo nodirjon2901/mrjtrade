@@ -44,7 +44,7 @@ public class CategoryController
         return categoryService.getItem(slug);
     }
 
-    @GetMapping("name-list")
+    @GetMapping("/name-list")
     public ResponseEntity<ApiResponse<List<CategoryItemDTO>>> getNameList()
     {
         return categoryService.getNameList();
