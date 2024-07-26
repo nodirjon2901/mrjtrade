@@ -17,15 +17,10 @@ import java.util.List;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity(name = "news")
-public class New extends BaseEntity{
-
-    String title;
-
-    @Column(length = 5000)
-    String body;
-
-    @OneToOne
-    Photo photo;
+public class New extends BaseEntity
+{
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    NewOption headOption;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "newness")
     List<NewOption> newOptions;
@@ -33,12 +28,11 @@ public class New extends BaseEntity{
     @Column(unique = true)
     String slug;
 
-    boolean active;
-
-    @CreationTimestamp
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    Date createDate;
-
     Integer orderNum;
 
+    @CreationTimestamp
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+    Date createDate;
+
+    Boolean active;
 }
