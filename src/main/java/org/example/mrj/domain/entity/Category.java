@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Entity(name = "equipment_category")
+@Entity(name = "category")
 public class Category extends BaseEntity
 {
     String header;
