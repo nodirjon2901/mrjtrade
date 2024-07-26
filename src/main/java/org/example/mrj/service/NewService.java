@@ -20,11 +20,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,7 +39,7 @@ public class NewService
 
     private final ObjectMapper objectMapper;
 
-    public ResponseEntity<ApiResponse<New>> create(String strNew, MultipartFile photoFile)
+    public ResponseEntity<ApiResponse<New>> create(String strNew, MultipartHttpServletRequest request)
     {
         ApiResponse<New> response = new ApiResponse<>();
         Optional<Integer> maxOrderNum = newRepository.getMaxOrderNum();
@@ -50,18 +48,22 @@ public class NewService
             New newness = objectMapper.readValue(strNew, New.class);
             newness.setOrderNum(maxOrderNum.map(num -> num + 1).orElse(1));
             newness.setActive(true);
-//            newness.setPhoto(photoService.save(photoFile));
-            New save = newRepository.save(newness);
-//            String slug = save.getId() + "-" + SlugUtil.makeSlug(save.getTitle());
-//            newRepository.updateSlug(slug, save.getId());
-//            save.setSlug(slug);
-            response.setData(save);
-            return ResponseEntity.status(200).body(response);
+
+            Iterator<String> fileNames = request.getFileNames();
+            while (fileNames.hasNext())
+            {
+                String key = fileNames.next();
+                MultipartFile photo = request.getFile(key);
+//                setNewsPhoto(key,photo);
+            }
+
+
         } catch (JsonProcessingException e)
         {
             response.setMessage(e.getMessage());
             return ResponseEntity.status(409).body(response);
         }
+        return null;
     }
 
     public ResponseEntity<ApiResponse<New>> findById(Long id)
