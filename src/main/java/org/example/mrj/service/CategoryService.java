@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.mrj.domain.dto.ApiResponse;
+import org.example.mrj.domain.dto.CategoryItemDTO;
 import org.example.mrj.domain.entity.Catalog;
 import org.example.mrj.domain.entity.Category;
 import org.example.mrj.domain.entity.CategoryItem;
@@ -266,9 +267,9 @@ public class CategoryService
     public ResponseEntity<ApiResponse<?>> delete(Long id)
     {
         ApiResponse<?> response = new ApiResponse<>();
-        if (categoryItemRepository.existsById(id))
+        if (!categoryItemRepository.existsById(id))
         {
-            response.setMessage("Category is not found by id: " + id);
+            response.setMessage("Category item is not found by id: " + id);
             return ResponseEntity.status(404).body(response);
         }
         categoryItemRepository.deleteById(id);
@@ -291,4 +292,13 @@ public class CategoryService
         return ResponseEntity.status(200).body(response);
     }
 
+    public ResponseEntity<ApiResponse<List<CategoryItemDTO>>> getNameList()
+    {
+        ApiResponse<List<CategoryItemDTO>> response = new ApiResponse<>();
+        List<CategoryItem> all = categoryItemRepository.findAll();
+        response.setData(new ArrayList<>());
+        all.forEach(i -> response.getData().add(new CategoryItemDTO(i)));
+        response.setMessage("Found " + all.size() + " category name(s)");
+        return ResponseEntity.status(200).body(response);
+    }
 }

@@ -52,7 +52,7 @@ public class SearchService {
 
         Specification<New> newSpec = searchSpecification.newContains(searchTerm);
         results.addAll(newRepository.findAll(newSpec).stream()
-                .filter(New::isActive)
+//                .filter(New::isActive)
                 .map(NewSearchDTO::new).toList());
 
         Specification<Partner> partnerSpec = searchSpecification.partnerContains(searchTerm);

@@ -24,7 +24,7 @@ public class NewSearchDTO {
 
     public NewSearchDTO(New newness){
         this.id= newness.getId();
-        this.title=newness.getTitle();
+//        this.title=newness.getTitle();
         this.slug= newness.getSlug();
         this.dtoName="New";
     }
