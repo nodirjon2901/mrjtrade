@@ -4,15 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.example.mrj.domain.dto.ApiResponse;
+import org.example.mrj.domain.dto.Product2DTO;
 import org.example.mrj.domain.entity.Catalog;
 import org.example.mrj.domain.entity.Characteristic;
 import org.example.mrj.domain.entity.Partner;
 import org.example.mrj.domain.entity.Product2;
 import org.example.mrj.exception.NotFoundException;
-import org.example.mrj.repository.CatalogRepository;
-import org.example.mrj.repository.CategoryItemRepository;
-import org.example.mrj.repository.PartnerRepository;
-import org.example.mrj.repository.Product2Repository;
+import org.example.mrj.repository.*;
 import org.example.mrj.util.SlugUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -21,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 
@@ -33,14 +32,16 @@ public class Product2Service
     private final PartnerRepository partnerRepository;
     private final CatalogRepository catalogRepository;
     private final CategoryItemRepository categoryItemRepository;
+    private final CharacteristicRepository characterRepo;
 
-    public ResponseEntity<ApiResponse<Product2>> add(String jsonData, MultipartFile mainPhoto, List<MultipartFile> gallery)
+    public ResponseEntity<ApiResponse<Product2>> add(String jsonData, List<MultipartFile> gallery)
     {
         ApiResponse<Product2> response = new ApiResponse<>();
         try
         {
             Product2 product2 = objectMapper.readValue(jsonData, Product2.class);
-            product2.setMainPhoto(photoService.save(mainPhoto));
+            System.err.println("product2.getCharacteristics().size() = " + product2.getCharacteristics().size());
+//            if (mainPhoto != null) product2.setMainPhoto(photoService.save(mainPhoto));
             product2.setGallery(new ArrayList<>());
             gallery.forEach(i -> product2.getGallery().add(photoService.save(i)));
 
@@ -110,7 +111,7 @@ public class Product2Service
         if (newProduct.getConditions() != null)
             fromDb.setConditions(newProduct.getConditions());
 
-        if (newProduct.getPartner().getId() != null)
+        if (newProduct.getPartner() != null && newProduct.getPartner().getId() != null)
         {
             if (!partnerRepository.existsById(newProduct.getPartner().getId()))
                 throw new NotFoundException("Partner not found by id: " + newProduct.getPartner().getId());
@@ -118,7 +119,7 @@ public class Product2Service
             fromDb.setPartner(partnerRepository.findById(newProduct.getPartner().getId()).get());
         }
 
-        if (newProduct.getCatalog().getId() != null)
+        if (newProduct.getCatalog() != null && newProduct.getCatalog().getId() != null)
         {
             if (!catalogRepository.existsById(newProduct.getCatalog().getId()))
                 throw new NotFoundException("Catalog not found by id: " + newProduct.getCatalog().getId());
@@ -138,13 +139,18 @@ public class Product2Service
                     {
                         if (dbItem.getId().equals(newItem.getId()))
                         {
-                            if (dbItem.getDescription() != null) dbItem.setDescription(newItem.getDescription());
-                            if (dbItem.getParameterName() != null) dbItem.setParameterName(newItem.getParameterName());
+                            if (newItem.getDescription() != null) dbItem.setDescription(newItem.getDescription());
+                            if (newItem.getParameterName() != null) dbItem.setParameterName(newItem.getParameterName());
                         }
                     }
-                } else
-                    fromDb.getCharacteristics().add(newItem);
+                    //If id given but , both of Description and ParameterName equals null , accordingly delete this Characteristic
+                    if (newItem.getDescription() != null && newItem.getParameterName() != null)
+                        characterRepo.deleteById(newItem.getId());
 
+                } else //If id not given accordingly this is new and add...
+                {
+                    fromDb.getCharacteristics().add(newItem);
+                }
             }
         }
 
@@ -164,22 +170,46 @@ public class Product2Service
         return ResponseEntity.ok(response);
     }
 
-    public ResponseEntity<ApiResponse<List<Product2>>> getAll(Long categoriesItemId, Long catalogId)
+    public ResponseEntity<ApiResponse<List<Product2DTO>>> getAll(Long categoryId, Long catalogId, String tag)
     {
-        ApiResponse<List<Product2>> response = new ApiResponse<>();
+        ApiResponse<List<Product2DTO>> response = new ApiResponse<>();
         List<Product2> products = new ArrayList<>();
 
-        if (categoriesItemId == null && catalogId == null)
-            products = product2Repository.findAll();
-        else if (catalogId != null && categoriesItemId == null)
-            products = product2Repository.findByCatalogId(catalogId);
-        else if (categoriesItemId != null)
+        if (categoryId != null && catalogId != null)
         {
-            List<Long> catalogIds = categoryItemRepository.getCatalogIds(categoriesItemId);
-            products = product2Repository.findByCatalogIds(catalogIds);
+            throw new RuntimeException("Filter using only category-id or catalog-id, not both!!!");
         }
 
-        response.setData(products);
+        if (categoryId == null && catalogId == null)
+        {
+            if (tag == null)
+                products = product2Repository.findAll();
+            else
+                products = product2Repository.findByTagContaining(tag);
+        } else if (catalogId != null)
+        {
+            if (tag == null)
+                products = product2Repository.findByCatalogId(catalogId);
+            else
+                products = product2Repository.findByCatalogId(catalogId)
+                        .stream()
+                        .filter(product -> product.getTag().stream()
+                                .anyMatch(t -> t.equalsIgnoreCase(tag)))
+                        .collect(Collectors.toList());
+        } else
+        {
+            List<Long> catalogIds = categoryItemRepository.getCatalogIds(categoryId);
+            if (tag == null)
+                products = product2Repository.findByCatalogIds(catalogIds);
+            else
+                products = product2Repository.findByCatalogIds(catalogIds)
+                        .stream()
+                        .filter(product -> product.getTag().stream()
+                                .anyMatch(t -> t.equalsIgnoreCase(tag)))
+                        .collect(Collectors.toList());
+        }
+        response.setData(new ArrayList<>());
+        products.forEach(i -> response.getData().add(new Product2DTO(i)));
         response.setMessage("Found " + products.size() + " product(s)");
 
         return ResponseEntity.ok(response);
