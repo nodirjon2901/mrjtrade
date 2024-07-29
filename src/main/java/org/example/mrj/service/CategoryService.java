@@ -130,74 +130,75 @@ public class CategoryService
         Category fromDB = all.get(0);
         List<CategoryItem> fromDBItemList = fromDB.getItemList();
         List<CategoryItem> newItemList = newCategory.getItemList();
-        for (CategoryItem newItem : newItemList)
-        {
-            if (newItem.getId() != null)
+        if (newItemList != null)
+            for (CategoryItem newItem : newItemList)
             {
-                //Check title
-                if (newItem.getTitle() != null)
+                if (newItem.getId() != null)
                 {
-                    for (CategoryItem itemDB : fromDBItemList)
-                        if (itemDB.getId().equals(newItem.getId()) && !itemDB.getTitle().equals(newItem.getTitle()))
-                        {
-                            if (categoryItemRepository.existsByTitleEqualsIgnoreCase(newItem.getTitle()))
-                                throw new NoUniqueNameException("Name '" + newItem.getTitle() + "' already exists");
-                            itemDB.setTitle(newItem.getTitle());
-                            itemDB.setSlug(SlugUtil.makeSlug(newItem.getTitle()));
-                        }
-                }
-
-                //Check catalog list
-                if (newItem.getCatalogList() != null)
-                {
-                    for (CategoryItem fromDbItem : fromDBItemList)
+                    //Check title
+                    if (newItem.getTitle() != null)
                     {
-                        if (fromDbItem.getId().equals(newItem.getId()))
-                        {
-                            for (Catalog newItemCatalog : newItem.getCatalogList())
+                        for (CategoryItem itemDB : fromDBItemList)
+                            if (itemDB.getId().equals(newItem.getId()) && !itemDB.getTitle().equals(newItem.getTitle()))
                             {
-                                for (Catalog fromDb : fromDbItem.getCatalogList())
+                                if (categoryItemRepository.existsByTitleEqualsIgnoreCase(newItem.getTitle()))
+                                    throw new NoUniqueNameException("Name '" + newItem.getTitle() + "' already exists");
+                                itemDB.setTitle(newItem.getTitle());
+                                itemDB.setSlug(SlugUtil.makeSlug(newItem.getTitle()));
+                            }
+                    }
+
+                    //Check catalog list
+                    if (newItem.getCatalogList() != null)
+                    {
+                        for (CategoryItem fromDbItem : fromDBItemList)
+                        {
+                            if (fromDbItem.getId().equals(newItem.getId()))
+                            {
+                                for (Catalog newItemCatalog : newItem.getCatalogList())
                                 {
-                                    //if given id found from database....
-                                    if (newItemCatalog.getId() != null && fromDb.getId().equals(newItemCatalog.getId()))
+                                    for (Catalog fromDb : fromDbItem.getCatalogList())
                                     {
-                                        //if new name given update else not given, delete this catalog
-                                        if (newItemCatalog.getName() != null)
-                                            fromDb.setName(newItemCatalog.getName());
-                                        else
-                                            catalogRepository.deleteById(newItemCatalog.getId());
+                                        //if given id found from database....
+                                        if (newItemCatalog.getId() != null && fromDb.getId().equals(newItemCatalog.getId()))
+                                        {
+                                            //if new name given update else not given, delete this catalog
+                                            if (newItemCatalog.getName() != null)
+                                                fromDb.setName(newItemCatalog.getName());
+                                            else
+                                                catalogRepository.deleteById(newItemCatalog.getId());
+                                        }
                                     }
-                                }
-                                //if catalog haven't id and name is not null add to database
-                                if (newItemCatalog.getId() == null && newItemCatalog.getName() != null)
-                                {
-                                    newItemCatalog.setCategoryItem(fromDbItem);
-                                    fromDbItem.getCatalogList().add(newItemCatalog);
+                                    //if catalog haven't id and name is not null add to database
+                                    if (newItemCatalog.getId() == null && newItemCatalog.getName() != null)
+                                    {
+                                        newItemCatalog.setCategoryItem(fromDbItem);
+                                        fromDbItem.getCatalogList().add(newItemCatalog);
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                //Check active
-                if (newItem.getActive() != null)
-                {
-                    for (CategoryItem categoryItemFromDB : fromDBItemList)
-                        if (categoryItemFromDB.getId().equals(newItem.getId()))
-                            categoryItemFromDB.setActive(newItem.getActive());
-                }
+                    //Check active
+                    if (newItem.getActive() != null)
+                    {
+                        for (CategoryItem categoryItemFromDB : fromDBItemList)
+                            if (categoryItemFromDB.getId().equals(newItem.getId()))
+                                categoryItemFromDB.setActive(newItem.getActive());
+                    }
 
-                //Check main
-                if (newItem.getMain() != null)
-                {
-                    for (CategoryItem categoryItemFromDB : fromDBItemList)
-                        if (categoryItemFromDB.getId().equals(newItem.getId()))
-                            categoryItemFromDB.setMain(newItem.getMain());
+                    //Check main
+                    if (newItem.getMain() != null)
+                    {
+                        for (CategoryItem categoryItemFromDB : fromDBItemList)
+                            if (categoryItemFromDB.getId().equals(newItem.getId()))
+                                categoryItemFromDB.setMain(newItem.getMain());
+                    }
                 }
             }
-        }
 
-        // Check header text:
+        // Check header text:\
         if (newCategory.getHeader() != null)
             fromDB.setHeader(newCategory.getHeader());
 

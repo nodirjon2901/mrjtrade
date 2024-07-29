@@ -66,16 +66,13 @@ public class BannerService
             return ResponseEntity.status(404).body(response);
         }
         Banner banner = all.get(0);
-        System.out.println("banner.getSliders().size() = " + banner.getSliders().size());
         List<Long> slidersId = bannerRepository.getSlidersId();
-        System.err.println("slidersId = " + slidersId);
 
         banner.setSliders(new ArrayList<>());
         for (Long id : slidersId)
         {
             banner.getSliders().add(bannerSliderRepository.findById(id).get());
         }
-        System.err.println("banner.getSliders().size() = " + banner.getSliders().size());
 
 
         response.setData(new BannerWrapper(banner));
