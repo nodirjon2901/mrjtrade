@@ -21,7 +21,7 @@ public class SearchService {
 
     private final CategoryItemRepository categoryItemRepository;
 
-    private final Product2Repository product2Repository;
+    private final ProductRepository productRepository;
 
     private final NewRepository newRepository;
 
@@ -45,13 +45,14 @@ public class SearchService {
         results.addAll(catalogRepository.findAll(catalogSpec).stream()
                         .map(CatalogSearchDTO::new).toList());
 
-        Specification<Product2> productSpec = searchSpecification.productContains(searchTerm);
-        results.addAll(product2Repository.findAll(productSpec).stream()
+        Specification<Product> productSpec = searchSpecification.productContains(searchTerm);
+        results.addAll(productRepository.findAll(productSpec).stream()
+                        .filter(Product::isActive)
                 .map(ProductSearchDTO::new).toList());
 
         Specification<New> newSpec = searchSpecification.newContains(searchTerm);
         results.addAll(newRepository.findAll(newSpec).stream()
-                .filter(New::getActive)
+//                .filter(New::isActive)
                 .map(NewSearchDTO::new).toList());
 
         Specification<Partner> partnerSpec = searchSpecification.partnerContains(searchTerm);
