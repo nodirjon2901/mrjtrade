@@ -19,7 +19,7 @@ public class New extends BaseEntity {
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "news", orphanRemoval = true)
     NewHeadOption head;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "newness", orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "newness")
     List<NewOption> newOptions;
 
     @Column(unique = true)

@@ -5,9 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.mrj.domain.dto.ApiResponse;
+import org.example.mrj.domain.dto.EventDTO;
 import org.example.mrj.domain.entity.Event;
 import org.example.mrj.domain.entity.EventAbout;
 import org.example.mrj.exception.NotFoundException;
+import org.example.mrj.repository.EventAboutRepository;
 import org.example.mrj.repository.EventRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +35,7 @@ public class EventService
     private final ObjectMapper objectMapper;
 
     private final PhotoService photoService;
+    private final EventAboutRepository eventAboutRepo;
 
     public ResponseEntity<ApiResponse<Event>> add(String json, MultipartFile photo)
     {
@@ -64,9 +67,9 @@ public class EventService
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    public ResponseEntity<ApiResponse<List<Event>>> getAll(String city, int page, int size, String[] sort)
+    public ResponseEntity<ApiResponse<List<EventDTO>>> getAll(String city, int page, int size, String[] sort)
     {
-        ApiResponse<List<Event>> response = new ApiResponse<>();
+        ApiResponse<List<EventDTO>> response = new ApiResponse<>();
         List<Event> all = new ArrayList<>();
 
         Sort.Direction direction = Sort.Direction.fromString(sort[1]);
@@ -82,7 +85,8 @@ public class EventService
         {
             all = eventRepository.findByCityEqualsIgnoreCase(city, pageable);
         }
-        response.setData(all);
+        response.setData(new ArrayList<>());
+        all.forEach(i -> response.getData().add(new EventDTO(i)));
         response.setMessage("Found " + all.size() + " event(s)");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -128,8 +132,12 @@ public class EventService
                 {
                     if (dbAbout.getId().equals(id))
                     {
-                        dbAbout.setHeading(newEventAbout.getHeading());
-                        dbAbout.setText(newEventAbout.getText());
+                        if (newEventAbout.getHeading() != null) dbAbout.setHeading(newEventAbout.getHeading());
+                        if (newEventAbout.getText() != null) dbAbout.setText(newEventAbout.getText());
+
+                        //if both of heading and about equals null , delete them
+                        if (newEventAbout.getHeading() == null && newEventAbout.getText() == null)
+                            eventAboutRepo.deleteById(newEvent.getId());
                     }
                 }
                 if (id == null)

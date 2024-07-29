@@ -20,4 +20,9 @@ public interface NewOptionRepository extends JpaRepository<NewOption, Long> {
     @Modifying
     @Query(value = "UPDATE new_option SET newness_id=null WHERE id = :id", nativeQuery = true)
     void setNewsIdNull(@Param("id") Long id);
+
+    @Transactional
+    @Modifying
+    @Query(value = "DELETE from new_option WHERE id= :id",nativeQuery = true)
+    void deleteee(Long id);
 }
