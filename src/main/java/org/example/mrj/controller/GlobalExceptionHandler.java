@@ -2,6 +2,7 @@ package org.example.mrj.controller;
 
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.exception.IllegalPhotoTypeException;
+import org.example.mrj.exception.NoUniqueNameException;
 import org.example.mrj.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<?>> handleOtherException(RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(e.getMessage(), null));
+    }
+
+    @ExceptionHandler(NoUniqueNameException.class)
+    public ResponseEntity<ApiResponse<?>> handleNoUniqueNameException(NoUniqueNameException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(e.getMessage(), null));
     }
 

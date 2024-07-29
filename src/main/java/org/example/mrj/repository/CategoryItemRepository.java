@@ -50,4 +50,6 @@ public interface CategoryItemRepository extends JpaRepository<CategoryItem, Long
 
     @Query(value = "SELECT catalog_list_id FROM category_item_catalog_list WHERE category_item_id = :categoryItemId", nativeQuery = true)
     List<Long> getCatalogIds(Long categoryItemId);
+
+    Boolean existsBySlug(String slug);
 }

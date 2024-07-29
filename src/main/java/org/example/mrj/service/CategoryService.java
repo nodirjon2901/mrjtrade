@@ -9,6 +9,7 @@ import org.example.mrj.domain.dto.CategoryItemDTO;
 import org.example.mrj.domain.entity.Catalog;
 import org.example.mrj.domain.entity.Category;
 import org.example.mrj.domain.entity.CategoryItem;
+import org.example.mrj.exception.NoUniqueNameException;
 import org.example.mrj.repository.CatalogRepository;
 import org.example.mrj.repository.CategoryItemRepository;
 import org.example.mrj.repository.CategoryRepository;
@@ -55,18 +56,28 @@ public class CategoryService
         Optional<Integer> maxOrderNum = categoryItemRepository.getMaxOrderNum();
         categoryItem.setOrderNum(maxOrderNum.map(num -> num + 1).orElse(1));
         List<Category> all = categoryRepo.findAll();
+        Category category = new Category();
+
         if (all.isEmpty())
         {
-            Category category = new Category();
             category.setItemList(List.of(categoryItem));
-            categoryRepo.save(category);
-            response.setData(category);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            response.setMessage("First category saved");
+        } else
+        {
+            if (categoryItemRepository.existsBySlug(categoryItem.getSlug()))
+                throw new NoUniqueNameException("Name \'" + categoryItem.getTitle() + "\' already exists");
+            category = all.get(0);
+
+            if (category.getItemList().isEmpty())
+                category.setItemList(List.of(categoryItem));
+            else
+                category.getItemList().add(categoryItem);
+
+            response.setMessage("Category added");
         }
-        Category category = all.get(0);
-        if (category.getItemList().isEmpty()) category.setItemList(List.of(categoryItem));
-        else category.getItemList().add(categoryItem);
+        categoryItemRepository.save(categoryItem);
         response.setData(categoryRepo.save(category));
+
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
