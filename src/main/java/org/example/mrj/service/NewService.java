@@ -98,10 +98,18 @@ public class NewService {
             return ResponseEntity.status(404).body(response);
         }
         New newness = optionalNew.get();
+
+        // Sort NewOption by orderNum, handle null orderNum
+        List<NewOption> sortedOptions = newness.getNewOptions().stream()
+                .sorted(Comparator.comparingInt(option -> option.getOrderNum() == null ? 0 : option.getOrderNum()))
+                .collect(Collectors.toList());
+        newness.setNewOptions(sortedOptions);
+
         response.setMessage("Found");
         response.setData(newness);
         return ResponseEntity.status(200).body(response);
     }
+
 
     public ResponseEntity<ApiResponse<List<NewDTO>>> findAll() {
         ApiResponse<List<NewDTO>> response = new ApiResponse<>();
@@ -153,14 +161,13 @@ public class NewService {
         if (newness.getNewOptions() != null) {
             List<NewOption> fromDBOptions = fromDB.getNewOptions();
             List<NewOption> newOptions = newness.getNewOptions();
-
+            int orderNum=1;
             for (NewOption newOption : newOptions) {
-                int i = 1;
                 for (NewOption fromDBOption : fromDBOptions) {
                     if (newOption.getId() != null && newOption.getId().equals(fromDBOption.getId())) {
+                        fromDBOption.setOrderNum(orderNum++);
                         if (newOption.getHeading() != null) fromDBOption.setHeading(newOption.getHeading());
                         if (newOption.getText() != null) fromDBOption.setText(newOption.getText());
-                        fromDBOption.setOrderNum(i);
                         if (newOption.getText() == null && newOption.getHeading() == null) {
                             System.err.println("newOption.getId() = " + newOption.getId());
                             newOptionRepository.deleteee(newOption.getId());
@@ -169,13 +176,13 @@ public class NewService {
                 }
 
                 if (newOption.getId() == null) {
-                    newOption.setOrderNum(i);
+                    newness.setOrderNum(orderNum++);
                     newOption.setNewness(fromDB);
                     fromDBOptions.add(newOption);
                 }
-                i++;
             }
         }
+
         response.setData(newRepository.save(fromDB));
         response.setMessage("Updated");
         return ResponseEntity.status(201).body(response);
