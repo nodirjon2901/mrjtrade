@@ -22,7 +22,7 @@ public class Product2Controller
     @PostMapping("/add")
     public ResponseEntity<ApiResponse<Product2>> addProduct(
             @RequestParam(value = "json") String jsonData,
-            @RequestParam(value = "main-photo") MultipartFile mainPhoto,
+            @RequestParam(value = "main-photo",required = false) MultipartFile mainPhoto,
             @RequestParam(value = "gallery") List<MultipartFile> gallery)
     {
         return product2Service.add(jsonData, mainPhoto, gallery);

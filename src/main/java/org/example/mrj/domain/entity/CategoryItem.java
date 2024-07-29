@@ -43,8 +43,6 @@ public class CategoryItem extends BaseEntity
     private void setCatalogId()
     {
         if (this.catalogList != null)
-        {
             this.catalogList.forEach(i -> i.setCategoryItem(this));
-        }
     }
 }

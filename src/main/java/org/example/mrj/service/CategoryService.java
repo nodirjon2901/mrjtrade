@@ -53,7 +53,7 @@ public class CategoryService
 
         categoryItem.setPhoto(photoService.save(photo));
         categoryItem.setSlug(SlugUtil.makeSlug(categoryItem.getTitle()));
-        Optional<Integer> maxOrderNum = categoryItemRepository.getMaxOrderNum();
+//        Optional<Integer> maxOrderNum = categoryItemRepository.getMaxOrderNum();
 //        categoryItem.setOrderNum(maxOrderNum.map(num -> num + 1).orElse(1));
         List<Category> all = categoryRepo.findAll();
         Category category = new Category();

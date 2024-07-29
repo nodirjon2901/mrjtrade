@@ -50,7 +50,7 @@ public class Product2 extends BaseEntity
     @ManyToOne
     Catalog catalog;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "product", orphanRemoval = true)
     List<Characteristic> characteristics;
 
     @OneToOne
@@ -60,4 +60,11 @@ public class Product2 extends BaseEntity
     @OneToMany
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     List<Photo> gallery;
+
+    @PostPersist
+    private void setIdToCharacteristics()
+    {
+        if (this.characteristics != null)
+            this.characteristics.forEach(i -> i.setProduct(this));
+    }
 }

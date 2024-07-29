@@ -9,10 +9,7 @@ import org.example.mrj.domain.entity.Characteristic;
 import org.example.mrj.domain.entity.Partner;
 import org.example.mrj.domain.entity.Product2;
 import org.example.mrj.exception.NotFoundException;
-import org.example.mrj.repository.CatalogRepository;
-import org.example.mrj.repository.CategoryItemRepository;
-import org.example.mrj.repository.PartnerRepository;
-import org.example.mrj.repository.Product2Repository;
+import org.example.mrj.repository.*;
 import org.example.mrj.util.SlugUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -33,6 +30,7 @@ public class Product2Service
     private final PartnerRepository partnerRepository;
     private final CatalogRepository catalogRepository;
     private final CategoryItemRepository categoryItemRepository;
+    private final CharacteristicRepository characterRepo;
 
     public ResponseEntity<ApiResponse<Product2>> add(String jsonData, MultipartFile mainPhoto, List<MultipartFile> gallery)
     {
@@ -40,7 +38,8 @@ public class Product2Service
         try
         {
             Product2 product2 = objectMapper.readValue(jsonData, Product2.class);
-            product2.setMainPhoto(photoService.save(mainPhoto));
+            System.err.println("product2.getCharacteristics().size() = " + product2.getCharacteristics().size());
+            if (mainPhoto != null) product2.setMainPhoto(photoService.save(mainPhoto));
             product2.setGallery(new ArrayList<>());
             gallery.forEach(i -> product2.getGallery().add(photoService.save(i)));
 
@@ -110,7 +109,7 @@ public class Product2Service
         if (newProduct.getConditions() != null)
             fromDb.setConditions(newProduct.getConditions());
 
-        if (newProduct.getPartner().getId() != null)
+        if (newProduct.getPartner() != null && newProduct.getPartner().getId() != null)
         {
             if (!partnerRepository.existsById(newProduct.getPartner().getId()))
                 throw new NotFoundException("Partner not found by id: " + newProduct.getPartner().getId());
@@ -118,7 +117,7 @@ public class Product2Service
             fromDb.setPartner(partnerRepository.findById(newProduct.getPartner().getId()).get());
         }
 
-        if (newProduct.getCatalog().getId() != null)
+        if (newProduct.getCatalog() != null && newProduct.getCatalog().getId() != null)
         {
             if (!catalogRepository.existsById(newProduct.getCatalog().getId()))
                 throw new NotFoundException("Catalog not found by id: " + newProduct.getCatalog().getId());
@@ -138,13 +137,18 @@ public class Product2Service
                     {
                         if (dbItem.getId().equals(newItem.getId()))
                         {
-                            if (dbItem.getDescription() != null) dbItem.setDescription(newItem.getDescription());
-                            if (dbItem.getParameterName() != null) dbItem.setParameterName(newItem.getParameterName());
+                            if (newItem.getDescription() != null) dbItem.setDescription(newItem.getDescription());
+                            if (newItem.getParameterName() != null) dbItem.setParameterName(newItem.getParameterName());
                         }
                     }
-                } else
-                    fromDb.getCharacteristics().add(newItem);
+                    //If id given but , both of Description and ParameterName equals null , accordingly delete this Characteristic
+                    if (newItem.getDescription() != null && newItem.getParameterName() != null)
+                        characterRepo.deleteById(newItem.getId());
 
+                } else //If id not given accordingly this is new and add...
+                {
+                    fromDb.getCharacteristics().add(newItem);
+                }
             }
         }
 
