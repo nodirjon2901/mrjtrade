@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.example.mrj.domain.dto.ApiResponse;
+import org.example.mrj.domain.dto.Product2DTO;
 import org.example.mrj.domain.entity.Catalog;
 import org.example.mrj.domain.entity.Characteristic;
 import org.example.mrj.domain.entity.Partner;
@@ -33,14 +34,14 @@ public class Product2Service
     private final CategoryItemRepository categoryItemRepository;
     private final CharacteristicRepository characterRepo;
 
-    public ResponseEntity<ApiResponse<Product2>> add(String jsonData, MultipartFile mainPhoto, List<MultipartFile> gallery)
+    public ResponseEntity<ApiResponse<Product2>> add(String jsonData, List<MultipartFile> gallery)
     {
         ApiResponse<Product2> response = new ApiResponse<>();
         try
         {
             Product2 product2 = objectMapper.readValue(jsonData, Product2.class);
             System.err.println("product2.getCharacteristics().size() = " + product2.getCharacteristics().size());
-            if (mainPhoto != null) product2.setMainPhoto(photoService.save(mainPhoto));
+//            if (mainPhoto != null) product2.setMainPhoto(photoService.save(mainPhoto));
             product2.setGallery(new ArrayList<>());
             gallery.forEach(i -> product2.getGallery().add(photoService.save(i)));
 
@@ -169,9 +170,9 @@ public class Product2Service
         return ResponseEntity.ok(response);
     }
 
-    public ResponseEntity<ApiResponse<List<Product2>>> getAll(Long categoryId, Long catalogId, String tag)
+    public ResponseEntity<ApiResponse<List<Product2DTO>>> getAll(Long categoryId, Long catalogId, String tag)
     {
-        ApiResponse<List<Product2>> response = new ApiResponse<>();
+        ApiResponse<List<Product2DTO>> response = new ApiResponse<>();
         List<Product2> products = new ArrayList<>();
 
         if (categoryId != null && catalogId != null)
@@ -207,7 +208,8 @@ public class Product2Service
                                 .anyMatch(t -> t.equalsIgnoreCase(tag)))
                         .collect(Collectors.toList());
         }
-        response.setData(products);
+        response.setData(new ArrayList<>());
+        products.forEach(i -> response.getData().add(new Product2DTO(i)));
         response.setMessage("Found " + products.size() + " product(s)");
 
         return ResponseEntity.ok(response);
