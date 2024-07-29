@@ -56,7 +56,7 @@ public class Product2Service
             if (catalog.isEmpty())
             {
                 System.err.println("Catalog not found by id: " + product2.getPartner().getId());
-                throw new NotFoundException("Catalog not found by id: " + product2.getPartner().getId());
+                throw new NotFoundException("Catalog not found by id: " + product2.getCatalog().getId());
             }
 
             Long id = product2Repository.save(new Product2()).getId();
