@@ -2,6 +2,7 @@ package org.example.mrj.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.mrj.domain.dto.ApiResponse;
+import org.example.mrj.domain.dto.EventDTO;
 import org.example.mrj.domain.entity.Event;
 import org.example.mrj.service.EventService;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +33,7 @@ public class EventController
     }
 
     @GetMapping("/all")
-    public ResponseEntity<ApiResponse<List<Event>>> getAll(
+    public ResponseEntity<ApiResponse<List<EventDTO>>> getAll(
             @RequestParam(value = "city", required = false) String city,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "6") int size,

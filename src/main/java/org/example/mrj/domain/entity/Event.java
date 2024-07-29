@@ -1,10 +1,7 @@
 package org.example.mrj.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -45,4 +42,11 @@ public class Event extends BaseEntity
     String city;
 
     String address;
+
+    @PostPersist
+    private void setIdToAbout()
+    {
+        if (abouts != null)
+            this.abouts.forEach(i -> i.setEvent(this));
+    }
 }

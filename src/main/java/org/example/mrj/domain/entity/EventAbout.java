@@ -1,5 +1,6 @@
 package org.example.mrj.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,4 +20,7 @@ public class EventAbout extends BaseEntity
     @Column(length = 1500)
     String text;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
+    Event event;
 }

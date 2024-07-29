@@ -35,5 +35,4 @@ public interface NewRepository extends JpaRepository<New, Long>, JpaSpecificatio
 
     @Query(value = "SELECT MAX(order_num) FROM news", nativeQuery = true)
     Optional<Integer> getMaxOrderNum();
-
 }
