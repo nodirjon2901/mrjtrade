@@ -40,17 +40,24 @@ public class Product2Service
         try
         {
             Product2 product2 = objectMapper.readValue(jsonData, Product2.class);
+            System.err.println("jsonData = " + jsonData);
 //            if (mainPhoto != null) product2.setMainPhoto(photoService.save(mainPhoto));
             product2.setGallery(new ArrayList<>());
             gallery.forEach(i -> product2.getGallery().add(photoService.save(i)));
 
             Optional<Partner> partner = partnerRepository.findById(product2.getPartner().getId());
             if (partner.isEmpty())
+            {
+                System.err.println("Partner not found by id: " + product2.getPartner().getId());
                 throw new NotFoundException("Partner not found by id: " + product2.getPartner().getId());
+            }
 
             Optional<Catalog> catalog = catalogRepository.findById(product2.getCatalog().getId());
             if (catalog.isEmpty())
-                throw new NotFoundException("Partner not found by id: " + product2.getPartner().getId());
+            {
+                System.err.println("Catalog not found by id: " + product2.getPartner().getId());
+                throw new NotFoundException("Catalog not found by id: " + product2.getPartner().getId());
+            }
 
             Long id = product2Repository.save(new Product2()).getId();
             product2.setId(id);
