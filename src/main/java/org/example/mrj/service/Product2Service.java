@@ -40,7 +40,6 @@ public class Product2Service
         try
         {
             Product2 product2 = objectMapper.readValue(jsonData, Product2.class);
-            System.err.println("product2.getCharacteristics().size() = " + product2.getCharacteristics().size());
 //            if (mainPhoto != null) product2.setMainPhoto(photoService.save(mainPhoto));
             product2.setGallery(new ArrayList<>());
             gallery.forEach(i -> product2.getGallery().add(photoService.save(i)));
