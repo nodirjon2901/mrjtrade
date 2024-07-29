@@ -16,4 +16,7 @@ public interface Product2Repository extends JpaRepository<Product2, Long>
 
     @Query(value = "SELECT * FROM product2 WHERE catalog_id IN :catalogIds", nativeQuery = true)
     List<Product2> findByCatalogIds(List<Long> catalogIds);
+
+    List<Product2> findByTagContaining(String tag);
+
 }

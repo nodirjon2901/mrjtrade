@@ -36,7 +36,7 @@ public class EventController
             @RequestParam(value = "city", required = false) String city,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "6") int size,
-            @RequestParam(value = "sort", defaultValue = "id,asc") String[] sort)
+            @RequestParam(value = "sort", defaultValue = "dateFrom,asc") String[] sort)
     {
         return eventService.getAll(city, page, size, sort);
     }

@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 
@@ -168,21 +169,44 @@ public class Product2Service
         return ResponseEntity.ok(response);
     }
 
-    public ResponseEntity<ApiResponse<List<Product2>>> getAll(Long categoriesItemId, Long catalogId)
+    public ResponseEntity<ApiResponse<List<Product2>>> getAll(Long categoryId, Long catalogId, String tag)
     {
         ApiResponse<List<Product2>> response = new ApiResponse<>();
         List<Product2> products = new ArrayList<>();
 
-        if (categoriesItemId == null && catalogId == null)
-            products = product2Repository.findAll();
-        else if (catalogId != null && categoriesItemId == null)
-            products = product2Repository.findByCatalogId(catalogId);
-        else if (categoriesItemId != null)
+        if (categoryId != null && catalogId != null)
         {
-            List<Long> catalogIds = categoryItemRepository.getCatalogIds(categoriesItemId);
-            products = product2Repository.findByCatalogIds(catalogIds);
+            throw new RuntimeException("Filter using only category-id or catalog-id, not both!!!");
         }
 
+        if (categoryId == null && catalogId == null)
+        {
+            if (tag == null)
+                products = product2Repository.findAll();
+            else
+                products = product2Repository.findByTagContaining(tag);
+        } else if (catalogId != null)
+        {
+            if (tag == null)
+                products = product2Repository.findByCatalogId(catalogId);
+            else
+                products = product2Repository.findByCatalogId(catalogId)
+                        .stream()
+                        .filter(product -> product.getTag().stream()
+                                .anyMatch(t -> t.equalsIgnoreCase(tag)))
+                        .collect(Collectors.toList());
+        } else
+        {
+            List<Long> catalogIds = categoryItemRepository.getCatalogIds(categoryId);
+            if (tag == null)
+                products = product2Repository.findByCatalogIds(catalogIds);
+            else
+                products = product2Repository.findByCatalogIds(catalogIds)
+                        .stream()
+                        .filter(product -> product.getTag().stream()
+                                .anyMatch(t -> t.equalsIgnoreCase(tag)))
+                        .collect(Collectors.toList());
+        }
         response.setData(products);
         response.setMessage("Found " + products.size() + " product(s)");
 

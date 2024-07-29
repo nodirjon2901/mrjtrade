@@ -22,7 +22,7 @@ public class Product2Controller
     @PostMapping("/add")
     public ResponseEntity<ApiResponse<Product2>> addProduct(
             @RequestParam(value = "json") String jsonData,
-            @RequestParam(value = "main-photo",required = false) MultipartFile mainPhoto,
+            @RequestParam(value = "main-photo", required = false) MultipartFile mainPhoto,
             @RequestParam(value = "gallery") List<MultipartFile> gallery)
     {
         return product2Service.add(jsonData, mainPhoto, gallery);
@@ -37,10 +37,11 @@ public class Product2Controller
 
     @GetMapping("/all")
     public ResponseEntity<ApiResponse<List<Product2>>> getProduct(
-            @RequestParam(value = "categories-id", required = false) Long categoriesId,
-            @RequestParam(value = "catalog-id", required = false) Long catalogId)
+            @RequestParam(value = "category-id", required = false) Long categoryId,
+            @RequestParam(value = "catalog-id", required = false) Long catalogId,
+            @RequestParam(value = "tag", required = false) String tag)
     {
-        return product2Service.getAll(categoriesId, catalogId);
+        return product2Service.getAll(categoryId, catalogId ,tag);
     }
 
 
