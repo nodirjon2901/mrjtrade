@@ -2,27 +2,24 @@ package org.example.mrj.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.Date;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity(name = "news")
-public class New extends BaseEntity
-{
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    NewOption headOption;
+public class New extends BaseEntity {
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "news", orphanRemoval = true)
+    NewHeadOption head;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "newness")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "newness", orphanRemoval = true)
     List<NewOption> newOptions;
 
     @Column(unique = true)
@@ -35,4 +32,14 @@ public class New extends BaseEntity
     Date createDate;
 
     Boolean active;
+
+    @PostPersist
+    private void setOptionsId() {
+        if (this.newOptions != null)
+            this.newOptions.forEach(i -> i.setNewness(this));
+        if (this.head != null)
+            this.head.setNews(this);
+    }
+
+
 }

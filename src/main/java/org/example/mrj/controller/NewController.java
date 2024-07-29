@@ -69,7 +69,7 @@ public class NewController
     public ResponseEntity<ApiResponse<New>> update(
             @RequestBody New newness)
     {
-        return newService.update(newness);
+        return newService.update2(newness);
     }
 
 
