@@ -51,7 +51,6 @@ public class Product2 extends BaseEntity
     Partner partner;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
     Catalog catalog;
 
     @ManyToOne(fetch = FetchType.LAZY)

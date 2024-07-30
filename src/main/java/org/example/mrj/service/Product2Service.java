@@ -67,6 +67,7 @@ public class Product2Service
 
             if (product2.getCatalog() != null)
             {
+                System.err.println("product2.getCatalog() = " + product2.getCatalog());
                 Optional<Catalog> catalog = catalogRepository.findById(product2.getCatalog().getId());
                 if (catalog.isEmpty())
                 {
@@ -77,6 +78,7 @@ public class Product2Service
 
             if (product2.getCategoryItem() != null)
             {
+                System.err.println("product2.getCategoryItem() = " + product2.getCategoryItem());
                 Optional<CategoryItem> categoryItem = categoryItemRepository.findById(product2.getCategoryItem().getId());
                 if (categoryItem.isEmpty())
                 {
