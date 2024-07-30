@@ -174,7 +174,17 @@ public class CategoryService
                                             if (newItemCatalog.getName() != null)
                                                 fromDb.setName(newItemCatalog.getName());
                                             else
+                                            {
+                                                List<Long> catalogIds = categoryItemRepository.getCatalogIds(newItemCatalog.getId());
+
+                                                Integer countByCatalogIds = product2Repository.findCountByCatalogIds(catalogIds);
+                                                if (countByCatalogIds > 0)
+                                                {
+                                                    logger.info("You are trying to delete a category-item. But inside of this category-item's CATALOG have {} product(s). Please delete first this product(s) or replace CATALOG of this product", countByCatalogIds);
+                                                    throw new RuntimeException("You are trying to delete a category-item. But inside of this category-item's CATALOG have product(s). Please delete first this product(s) or replace CATALOG of this product");
+                                                }
                                                 catalogRepository.deleteById(newItemCatalog.getId());
+                                            }
                                         }
                                     }
                                     //if catalog haven't id and name is not null add to database
