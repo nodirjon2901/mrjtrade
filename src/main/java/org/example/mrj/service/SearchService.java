@@ -59,6 +59,10 @@ public class SearchService {
                 .filter(Partner::isActive)
                 .map(PartnerSearchDTO::new).toList());
 
+        Specification<Event> eventSpec = searchSpecification.eventContains(searchTerm);
+        results.addAll(eventRepository.findAll(eventSpec).stream()
+                .map(EventSearchDTO::new).toList());
+
         response.setData(results);
         response.setMessage("Search result");
         return ResponseEntity.status(200).body(response);

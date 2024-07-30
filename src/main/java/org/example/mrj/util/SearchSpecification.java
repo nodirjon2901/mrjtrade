@@ -115,4 +115,26 @@ public class SearchSpecification {
             return Objects.requireNonNull(spec).toPredicate(root, query, criteriaBuilder);
         };
     }
+
+    public Specification<Event> eventContains(String searchTerm) {
+        String[] searchTerms = searchTerm.toLowerCase().split(" ");
+        return (root, query, criteriaBuilder) -> {
+            Join<Event, EventAbout> aboutJoin = root.join("abouts", JoinType.LEFT);
+            Specification<Event> spec = null;
+            for (String term : searchTerms) {
+                Specification<Event> tempSpec = (root1, query1, criteriaBuilder1) -> criteriaBuilder.or(
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("heading")), "%" + term + "%"),
+                        criteriaBuilder.like(criteriaBuilder.lower(aboutJoin.get("heading")), "%" + term + "%"),
+                        criteriaBuilder.like(criteriaBuilder.lower(aboutJoin.get("text")), "%" + term + "%")
+                );
+                if (spec == null) {
+                    spec = tempSpec;
+                } else {
+                    spec = spec.or(tempSpec);
+                }
+            }
+            return Objects.requireNonNull(spec).toPredicate(root, query, criteriaBuilder);
+        };
+    }
+
 }
