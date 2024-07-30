@@ -52,6 +52,10 @@ public class NewService {
                 MultipartFile photo = request.getFile(key);
                 setNewsPhoto(key, photo, newness);
             }
+            int currentMaxOrderNum = newOptionRepository.getMaxOrderNum().orElse(0);
+            for (NewOption newOption : newness.getNewOptions()) {
+                newOption.setOrderNum(++currentMaxOrderNum);
+            }
             New save = newRepository.save(newness);
             String slug = save.getId() + "-" + SlugUtil.makeSlug(save.getHead().getTitle());
             newRepository.updateSlug(slug, save.getId());
@@ -155,12 +159,11 @@ public class NewService {
             List<NewOption> newOptions = newness.getNewOptions();
 
             for (NewOption newOption : newOptions) {
-                int i = 1;
                 for (NewOption fromDBOption : fromDBOptions) {
                     if (newOption.getId() != null && newOption.getId().equals(fromDBOption.getId())) {
                         if (newOption.getHeading() != null) fromDBOption.setHeading(newOption.getHeading());
                         if (newOption.getText() != null) fromDBOption.setText(newOption.getText());
-                        fromDBOption.setOrderNum(i);
+                        if (newOption.getOrderNum()!=null) fromDBOption.setOrderNum(newOption.getOrderNum());
                         if (newOption.getText() == null && newOption.getHeading() == null) {
                             System.err.println("newOption.getId() = " + newOption.getId());
                             newOptionRepository.deleteee(newOption.getId());
@@ -169,12 +172,11 @@ public class NewService {
                 }
 
                 if (newOption.getId() == null) {
-                    newOption.setOrderNum(i);
                     newOption.setNewness(fromDB);
                     fromDBOptions.add(newOption);
                 }
-                i++;
             }
+            fromDBOptions.sort(Comparator.comparing(NewOption::getOrderNum));
         }
         response.setData(newRepository.save(fromDB));
         response.setMessage("Updated");
