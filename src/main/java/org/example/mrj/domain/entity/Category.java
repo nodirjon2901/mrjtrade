@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PostPersist;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,9 +22,9 @@ public class Category extends BaseEntity
 {
     String header;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "category")
     @JsonProperty(value = "item")
-    List<CategoryItem> itemList;
+    List<CategoryItem> items;
 
     Boolean addable = true;
 
@@ -31,7 +32,14 @@ public class Category extends BaseEntity
     {
         super(id);
         this.header = header;
-        this.itemList = itemList;
+        this.items = itemList;
         this.addable = addable;
+    }
+
+    @PostPersist
+    private void setItemsId()
+    {
+        if (this.items != null)
+            this.items.forEach(i -> i.setCategory(this));
     }
 }

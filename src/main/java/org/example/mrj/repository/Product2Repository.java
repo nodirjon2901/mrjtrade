@@ -20,4 +20,9 @@ public interface Product2Repository extends JpaRepository<Product2, Long>
     List<Product2> findByTagContaining(String tag);
 
     List<Product2> findByCategoryItemId(Long categoryItemId);
+
+    boolean existsByCategoryItemId(Long catalogId);
+
+    @Query(value = "SELECT COUNT(id) FROM product2 WHERE catalog_id IN :catalogIds", nativeQuery = true)
+    Integer findCountByCatalogIds(List<Long> catalogIds);
 }

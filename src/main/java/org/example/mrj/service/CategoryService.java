@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.example.mrj.controller.RequestLoggingFilter;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.dto.CategoryItemDTO;
 import org.example.mrj.domain.entity.Catalog;
@@ -13,7 +14,10 @@ import org.example.mrj.exception.NoUniqueNameException;
 import org.example.mrj.repository.CatalogRepository;
 import org.example.mrj.repository.CategoryItemRepository;
 import org.example.mrj.repository.CategoryRepository;
+import org.example.mrj.repository.Product2Repository;
 import org.example.mrj.util.SlugUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -36,6 +40,9 @@ public class CategoryService
     private final PhotoService photoService;
     private final CategoryItemRepository categoryItemRepository;
     private final CatalogRepository catalogRepository;
+    private final Product2Repository product2Repository;
+
+    private static final Logger logger = LoggerFactory.getLogger(RequestLoggingFilter.class);
 
     public ResponseEntity<ApiResponse<Category>> addItem(String json, MultipartFile photo)
     {
@@ -60,18 +67,19 @@ public class CategoryService
 
         if (all.isEmpty())
         {
-            category.setItemList(List.of(categoryItem));
+            category.setItems(List.of(categoryItem));
             response.setMessage("First category saved");
         } else
         {
             if (categoryItemRepository.existsByTitleEqualsIgnoreCase(categoryItem.getTitle()))
+            {
+                logger.info("Name '{}' already exists", categoryItem.getTitle());
                 throw new NoUniqueNameException("Name '" + categoryItem.getTitle() + "' already exists");
+            }
             category = all.get(0);
 
-            if (category.getItemList().isEmpty())
-                category.setItemList(List.of(categoryItem));
-            else
-                category.getItemList().add(categoryItem);
+            category.getItems().add(categoryItem);
+            categoryItem.setCategory(category);
 
             response.setMessage("Category added");
         }
@@ -93,7 +101,7 @@ public class CategoryService
         Category category = all.get(0);
 
         List<CategoryItem> categoryItemList = new ArrayList<>();
-        for (CategoryItem categoryItem : category.getItemList())
+        for (CategoryItem categoryItem : category.getItems())
         {
             if (categoryItem.getMain().equals(main) && categoryItem.getActive().equals(active))
                 categoryItemList.add(categoryItem);
@@ -128,8 +136,8 @@ public class CategoryService
             return ResponseEntity.status(404).body(response);
         }
         Category fromDB = all.get(0);
-        List<CategoryItem> fromDBItemList = fromDB.getItemList();
-        List<CategoryItem> newItemList = newCategory.getItemList();
+        List<CategoryItem> fromDBItemList = fromDB.getItems();
+        List<CategoryItem> newItemList = newCategory.getItems();
         if (newItemList != null)
             for (CategoryItem newItem : newItemList)
             {
@@ -272,6 +280,22 @@ public class CategoryService
             response.setMessage("Category item is not found by id: " + id);
             return ResponseEntity.status(404).body(response);
         }
+
+        if (product2Repository.existsByCategoryItemId(id))
+        {
+            logger.info("You are trying to delete a category-item. But inside of this category-item have product(s). Please delete first this product(s) or replace category-item of this product");
+            throw new RuntimeException("You are trying to delete a category-item. But inside of this category-item have product(s). Please delete first this product(s) or replace category-item of this product");
+        }
+
+        List<Long> catalogIds = categoryItemRepository.getCatalogIds(id);
+
+        Integer countByCatalogIds = product2Repository.findCountByCatalogIds(catalogIds);
+        if (countByCatalogIds > 0)
+        {
+            logger.info("You are trying to delete a category-item. But inside of this category-item's CATALOG have {} product(s). Please delete first this product(s) or replace CATALOG of this product", countByCatalogIds);
+            throw new RuntimeException("You are trying to delete a category-item. But inside of this category-item's CATALOG have product(s). Please delete first this product(s) or replace CATALOG of this product");
+        }
+
         categoryItemRepository.deleteById(id);
         response.setMessage("Successfully deleted!");
         return ResponseEntity.status(200).body(response);

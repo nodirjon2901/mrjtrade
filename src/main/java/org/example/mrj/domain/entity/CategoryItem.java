@@ -1,5 +1,6 @@
 package org.example.mrj.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -36,6 +37,10 @@ public class CategoryItem extends BaseEntity
     Boolean active = true;
 
     Boolean main = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
+    Category category;
 
 //    Integer orderNum;
 
