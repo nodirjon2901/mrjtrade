@@ -19,4 +19,5 @@ public interface Product2Repository extends JpaRepository<Product2, Long>
 
     List<Product2> findByTagContaining(String tag);
 
+    List<Product2> findByCategoryItemId(Long categoryItemId);
 }

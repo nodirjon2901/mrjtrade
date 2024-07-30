@@ -1,5 +1,6 @@
 package org.example.mrj.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.util.List;
 
@@ -34,7 +36,8 @@ public class Product2 extends BaseEntity
     String description;
 
     @Min(value = 0, message = "Cannot have a value less than 0.")
-    @Column(columnDefinition = "INT CHECK (discount >= 0)")
+    @Max(value = 100, message = "Cannot have a value more than 100.")
+    @Column(columnDefinition = "INT CHECK (discount >= 0 AND discount <= 100)")
     Integer discount;
 
     @DecimalMin("0.0")
@@ -47,8 +50,13 @@ public class Product2 extends BaseEntity
     @JsonProperty(value = "brand")
     Partner partner;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     Catalog catalog;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonProperty(value = "categoryItem")
+    CategoryItem categoryItem;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "product", orphanRemoval = true)
     List<Characteristic> characteristics;

@@ -3,15 +3,15 @@ package org.example.mrj.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.example.mrj.controller.RequestLoggingFilter;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.dto.Product2DTO;
-import org.example.mrj.domain.entity.Catalog;
-import org.example.mrj.domain.entity.Characteristic;
-import org.example.mrj.domain.entity.Partner;
-import org.example.mrj.domain.entity.Product2;
+import org.example.mrj.domain.entity.*;
 import org.example.mrj.exception.NotFoundException;
 import org.example.mrj.repository.*;
 import org.example.mrj.util.SlugUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,29 +34,55 @@ public class Product2Service
     private final CategoryItemRepository categoryItemRepository;
     private final CharacteristicRepository characterRepo;
 
+    private static final Logger logger = LoggerFactory.getLogger(RequestLoggingFilter.class);
+
     public ResponseEntity<ApiResponse<Product2>> add(String jsonData, List<MultipartFile> gallery)
     {
         ApiResponse<Product2> response = new ApiResponse<>();
         try
         {
             Product2 product2 = objectMapper.readValue(jsonData, Product2.class);
-            System.err.println("jsonData = " + jsonData);
+            if (product2.getCatalog() != null && product2.getCategoryItem() != null)
+            {
+                logger.info("Product belongs to either catalog or CategoryItem, not both !!!");
+                throw new RuntimeException("Product belongs to either catalog or CategoryItem, not both !!!");
+            }
 //            if (mainPhoto != null) product2.setMainPhoto(photoService.save(mainPhoto));
             product2.setGallery(new ArrayList<>());
             gallery.forEach(i -> product2.getGallery().add(photoService.save(i)));
 
-            Optional<Partner> partner = partnerRepository.findById(product2.getPartner().getId());
-            if (partner.isEmpty())
+            if (product2.getPartner() != null)
             {
-                System.err.println("Partner not found by id: " + product2.getPartner().getId());
-                throw new NotFoundException("Partner not found by id: " + product2.getPartner().getId());
+                Optional<Partner> partner = partnerRepository.findById(product2.getPartner().getId());
+                if (partner.isEmpty())
+                {
+                    logger.info("Partner not found by id: {}", product2.getPartner().getId());
+                    throw new NotFoundException("Partner not found by id: " + product2.getPartner().getId());
+                }
+            } else
+            {
+                logger.info("Partner not given");
+                throw new RuntimeException("Partner not given");
             }
 
-            Optional<Catalog> catalog = catalogRepository.findById(product2.getCatalog().getId());
-            if (catalog.isEmpty())
+            if (product2.getCatalog() != null)
             {
-                System.err.println("Catalog not found by id: " + product2.getPartner().getId());
-                throw new NotFoundException("Catalog not found by id: " + product2.getCatalog().getId());
+                Optional<Catalog> catalog = catalogRepository.findById(product2.getCatalog().getId());
+                if (catalog.isEmpty())
+                {
+                    logger.info("Catalog not found by id: {}", product2.getCatalog().getId());
+                    throw new NotFoundException("Catalog not found by id: " + product2.getCatalog().getId());
+                }
+            }
+
+            if (product2.getCategoryItem() != null)
+            {
+                Optional<CategoryItem> categoryItem = categoryItemRepository.findById(product2.getCategoryItem().getId());
+                if (categoryItem.isEmpty())
+                {
+                    logger.info("CategoryItem not found by id: {}", product2.getCategoryItem().getId());
+                    throw new NotFoundException("CategoryItem not found by id: " + product2.getCategoryItem().getId());
+                }
             }
 
             Long id = product2Repository.save(new Product2()).getId();
@@ -176,17 +202,17 @@ public class Product2Service
         return ResponseEntity.ok(response);
     }
 
-    public ResponseEntity<ApiResponse<List<Product2DTO>>> getAll(Long categoryId, Long catalogId, String tag)
+    public ResponseEntity<ApiResponse<List<Product2DTO>>> getAll(Long categoryItemId, Long catalogId, String tag)
     {
         ApiResponse<List<Product2DTO>> response = new ApiResponse<>();
         List<Product2> products = new ArrayList<>();
 
-        if (categoryId != null && catalogId != null)
+        if (categoryItemId != null && catalogId != null)
         {
-            throw new RuntimeException("Filter using only category-id or catalog-id, not both!!!");
+            throw new RuntimeException("Filter only for either of category-id or catalog-id, not both!!!");
         }
 
-        if (categoryId == null && catalogId == null)
+        if (categoryItemId == null && catalogId == null)
         {
             if (tag == null)
                 products = product2Repository.findAll();
@@ -204,15 +230,30 @@ public class Product2Service
                         .collect(Collectors.toList());
         } else
         {
-            List<Long> catalogIds = categoryItemRepository.getCatalogIds(categoryId);
-            if (tag == null)
-                products = product2Repository.findByCatalogIds(catalogIds);
-            else
-                products = product2Repository.findByCatalogIds(catalogIds)
-                        .stream()
-                        .filter(product -> product.getTag().stream()
-                                .anyMatch(t -> t.equalsIgnoreCase(tag)))
-                        .collect(Collectors.toList());
+            List<Long> catalogIds = categoryItemRepository.getCatalogIds(categoryItemId);
+
+            if (!catalogIds.isEmpty())
+            {
+                if (tag == null)
+                    products = product2Repository.findByCatalogIds(catalogIds);
+                else
+                    products = product2Repository.findByCatalogIds(catalogIds)
+                            .stream()
+                            .filter(product -> product.getTag().stream()
+                                    .anyMatch(t -> t.equalsIgnoreCase(tag)))
+                            .collect(Collectors.toList());
+            } else
+            {
+                if (tag == null)
+                    products = product2Repository.findByCategoryItemId(categoryItemId);
+                else
+                    products = product2Repository.findByCategoryItemId(categoryItemId)
+                            .stream()
+                            .filter(product -> product.getTag().stream()
+                                    .anyMatch(t -> t.equalsIgnoreCase(tag)))
+                            .collect(Collectors.toList());
+            }
+
         }
         response.setData(new ArrayList<>());
         products.forEach(i -> response.getData().add(new Product2DTO(i)));
