@@ -24,7 +24,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -52,10 +51,8 @@ public class NewService {
                 MultipartFile photo = request.getFile(key);
                 setNewsPhoto(key, photo, newness);
             }
-            int currentMaxOrderNum = newOptionRepository.getMaxOrderNum().orElse(0);
-            for (NewOption newOption : newness.getNewOptions()) {
-                newOption.setOrderNum(++currentMaxOrderNum);
-            }
+
+            newness.getNewOptions().sort(Comparator.comparing(NewOption::getOrderNum));
             New save = newRepository.save(newness);
             String slug = save.getId() + "-" + SlugUtil.makeSlug(save.getHead().getTitle());
             newRepository.updateSlug(slug, save.getId());
@@ -102,6 +99,7 @@ public class NewService {
             return ResponseEntity.status(404).body(response);
         }
         New newness = optionalNew.get();
+        newness.getNewOptions().sort(Comparator.comparing(NewOption::getOrderNum));
         response.setMessage("Found");
         response.setData(newness);
         return ResponseEntity.status(200).body(response);
