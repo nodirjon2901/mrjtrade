@@ -5,8 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.example.mrj.domain.entity.Photo;
-import org.example.mrj.domain.entity.Product2;
+import org.example.mrj.domain.entity.Product;
 
 
 @Data
@@ -19,20 +18,20 @@ public class ProductSearchDTO {
 
     String name;
 
-    String shortDescription;
+    String mainDescription;
 
     String slug;
 
-    Photo mainPhoto;
+    String mainPhotoUrl;
 
     String dtoName;
 
-    public ProductSearchDTO(Product2 product){
+    public ProductSearchDTO(Product product){
         this.id= product.getId();
         this.name= product.getName();
-        this.shortDescription= product.getShortDescription();
+        this.mainDescription= product.getMainDescription();
         this.slug=product.getSlug();
-        this.mainPhoto= product.getMainPhoto();
+        this.mainPhotoUrl= product.getMainPhotoUrl();
         this.dtoName="Product";
     }
 }

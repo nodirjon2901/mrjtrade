@@ -19,13 +19,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ApiResponse<?>> handleNotFoundException(NotFoundException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(e.getMessage(), null));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(e.getMessage(), null));
     }
 
-//    @ExceptionHandler(RuntimeException.class)
-//    public ResponseEntity<ApiResponse<?>> handleOtherException(RuntimeException e) {
-//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(e.getMessage(), null));
-//    }
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiResponse<?>> handleOtherException(RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(e.getMessage(), null));
+    }
 
     @ExceptionHandler(NoUniqueNameException.class)
     public ResponseEntity<ApiResponse<?>> handleNoUniqueNameException(NoUniqueNameException e) {

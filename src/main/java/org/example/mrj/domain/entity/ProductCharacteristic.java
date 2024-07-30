@@ -2,25 +2,27 @@ package org.example.mrj.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.FieldDefaults;
+
+import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
-@Entity(name = "catalog")
-public class Catalog extends BaseEntity
-{
+@Entity(name = "product_characteristic")
+public class ProductCharacteristic extends BaseEntity{
 
-    String name;
+    String title;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    List<String> data;
+
+    @ManyToOne
     @JsonIgnore
-    CategoryItem categoryItem;
+    @JoinColumn(name = "product_id", nullable = false)
+    Product product;
+
 }

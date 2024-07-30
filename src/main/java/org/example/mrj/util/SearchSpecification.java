@@ -1,7 +1,5 @@
 package org.example.mrj.util;
 
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
 import org.example.mrj.domain.entity.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
@@ -47,14 +45,14 @@ public class SearchSpecification {
         };
     }
 
-    public Specification<Product2> productContains(String searchTerm) {
+    public Specification<Product> productContains(String searchTerm) {
         String[] searchTerms = searchTerm.toLowerCase().split(" ");
         return (root, query, criteriaBuilder) -> {
-            Specification<Product2> spec = null;
+            Specification<Product> spec = null;
             for (String term : searchTerms) {
-                Specification<Product2> tempSpec = (root1, query1, criteriaBuilder1) -> criteriaBuilder.or(
+                Specification<Product> tempSpec = (root1, query1, criteriaBuilder1) -> criteriaBuilder.or(
                         criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + term + "%"),
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("shortDescription")), "%" + term + "%"),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("mainDescription")), "%" + term + "%"),
                         criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), "%" + term + "%")
                 );
                 if (spec == null) {
@@ -70,20 +68,11 @@ public class SearchSpecification {
     public Specification<New> newContains(String searchTerm) {
         String[] searchTerms = searchTerm.toLowerCase().split(" ");
         return (root, query, criteriaBuilder) -> {
-            // Join with NewHeadOption and NewOption entities
-            Join<New, NewHeadOption> headJoin = root.join("head", JoinType.LEFT);
-            Join<New, NewOption> optionJoin = root.join("newOptions", JoinType.LEFT);
-
             Specification<New> spec = null;
-
             for (String term : searchTerms) {
                 Specification<New> tempSpec = (root1, query1, criteriaBuilder1) -> criteriaBuilder.or(
-                        // Search in NewHeadOption title and body
-                        criteriaBuilder.like(criteriaBuilder.lower(headJoin.get("title")), "%" + term + "%"),
-                        criteriaBuilder.like(criteriaBuilder.lower(headJoin.get("body")), "%" + term + "%"),
-                        // Search in NewOption heading and text
-                        criteriaBuilder.like(criteriaBuilder.lower(optionJoin.get("heading")), "%" + term + "%"),
-                        criteriaBuilder.like(criteriaBuilder.lower(optionJoin.get("text")), "%" + term + "%")
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), "%" + term + "%"),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("body")), "%" + term + "%")
                 );
                 if (spec == null) {
                     spec = tempSpec;
@@ -94,6 +83,7 @@ public class SearchSpecification {
             return Objects.requireNonNull(spec).toPredicate(root, query, criteriaBuilder);
         };
     }
+
 
     public Specification<Partner> partnerContains(String searchTerm) {
         String[] searchTerms = searchTerm.toLowerCase().split(" ");

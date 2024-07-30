@@ -37,14 +37,12 @@ public class CategoryItem extends BaseEntity
 
     Boolean main = true;
 
-    Integer orderNum;
+//    Integer orderNum;
 
     @PostPersist
     private void setCatalogId()
     {
         if (this.catalogList != null)
-        {
             this.catalogList.forEach(i -> i.setCategoryItem(this));
-        }
     }
 }

@@ -2,6 +2,7 @@ package org.example.mrj.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.mrj.domain.dto.ApiResponse;
+import org.example.mrj.domain.dto.Product2DTO;
 import org.example.mrj.domain.entity.Product2;
 import org.example.mrj.service.Product2Service;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +23,11 @@ public class Product2Controller
     @PostMapping("/add")
     public ResponseEntity<ApiResponse<Product2>> addProduct(
             @RequestParam(value = "json") String jsonData,
-            @RequestParam(value = "main-photo") MultipartFile mainPhoto,
+//            @RequestParam(value = "main-photo", required = false) MultipartFile mainPhoto,
             @RequestParam(value = "gallery") List<MultipartFile> gallery)
     {
-        return product2Service.add(jsonData, mainPhoto, gallery);
+        return product2Service.
+                add(jsonData, gallery);
     }
 
     @GetMapping("/{slug}")
@@ -36,11 +38,12 @@ public class Product2Controller
     }
 
     @GetMapping("/all")
-    public ResponseEntity<ApiResponse<List<Product2>>> getProduct(
-            @RequestParam(value = "categories-id", required = false) Long categoriesId,
-            @RequestParam(value = "catalog-id", required = false) Long catalogId)
+    public ResponseEntity<ApiResponse<List<Product2DTO>>> getProduct(
+            @RequestParam(value = "category-id", required = false) Long categoryId,
+            @RequestParam(value = "catalog-id", required = false) Long catalogId,
+            @RequestParam(value = "tag", required = false) String tag)
     {
-        return product2Service.getAll(categoriesId, catalogId);
+        return product2Service.getAll(categoryId, catalogId, tag);
     }
 
 
