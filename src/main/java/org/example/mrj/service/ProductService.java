@@ -202,7 +202,6 @@ public class ProductService
         {
             for (Characteristic newItem : newList)
             {
-                System.err.println("characteristic.getParameterName() = " + newItem.getParameterName());
 
                 if (newItem.getId() != null)
                 {
