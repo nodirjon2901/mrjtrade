@@ -21,7 +21,7 @@ public class Partner extends BaseEntity {
     @Column(name = "main_description")
     String mainDescription;
 
-    @Column(length = 1000)
+    @Column(length = 2000)
     String description;
 
     @OneToOne
