@@ -18,11 +18,14 @@ public class CatalogSearchDTO {
 
     String name;
 
+    String categoryName;
+
     String dtoName;
 
     public CatalogSearchDTO(Catalog catalog){
         this.id= catalog.getId();
         this.name= catalog.getName();
+        this.categoryName=catalog.getCategoryItem().getTitle();
         this.dtoName="Catalog";
     }
 
