@@ -27,7 +27,7 @@ public class Event extends BaseEntity
     @JsonProperty(value = "photo", access = JsonProperty.Access.READ_ONLY)
     Photo coverPhoto; // Main photo
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "event", orphanRemoval = true)
     List<EventAbout> abouts;
 
     String dateFrom;

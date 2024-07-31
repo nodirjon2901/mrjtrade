@@ -47,12 +47,12 @@ public class SearchSpecification {
         };
     }
 
-    public Specification<Product2> productContains(String searchTerm) {
+    public Specification<Product> productContains(String searchTerm) {
         String[] searchTerms = searchTerm.toLowerCase().split(" ");
         return (root, query, criteriaBuilder) -> {
-            Specification<Product2> spec = null;
+            Specification<Product> spec = null;
             for (String term : searchTerms) {
-                Specification<Product2> tempSpec = (root1, query1, criteriaBuilder1) -> criteriaBuilder.or(
+                Specification<Product> tempSpec = (root1, query1, criteriaBuilder1) -> criteriaBuilder.or(
                         criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + term + "%"),
                         criteriaBuilder.like(criteriaBuilder.lower(root.get("shortDescription")), "%" + term + "%"),
                         criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), "%" + term + "%")

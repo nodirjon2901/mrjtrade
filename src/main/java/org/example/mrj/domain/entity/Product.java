@@ -1,6 +1,5 @@
 package org.example.mrj.domain.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -18,8 +17,8 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 
 @Entity
-@Table(name = "product2")
-public class Product2 extends BaseEntity
+@Table(name = "product")
+public class Product extends BaseEntity
 {
     String name;
 
@@ -50,11 +49,12 @@ public class Product2 extends BaseEntity
     @JsonProperty(value = "brand")
     Partner partner;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     Catalog catalog;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonProperty(value = "categoryItem")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JsonProperty(value = "categoryItem", access = JsonProperty.Access.WRITE_ONLY)
     CategoryItem categoryItem;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "product", orphanRemoval = true)

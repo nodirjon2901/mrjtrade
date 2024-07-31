@@ -1,12 +1,11 @@
 package org.example.mrj.domain.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.example.mrj.domain.entity.Product2;
+import org.example.mrj.domain.entity.Product;
 
 import java.util.List;
 
@@ -14,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Product2DTO
+public class ProductDTO
 {
     Long id;
 
@@ -32,7 +31,7 @@ public class Product2DTO
 
     Double originalPrice;
 
-    public Product2DTO(Product2 entity)
+    public ProductDTO(Product entity)
     {
         this.id = entity.getId();
         this.slug = entity.getSlug();

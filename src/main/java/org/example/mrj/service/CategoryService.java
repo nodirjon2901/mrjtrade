@@ -14,7 +14,7 @@ import org.example.mrj.exception.NoUniqueNameException;
 import org.example.mrj.repository.CatalogRepository;
 import org.example.mrj.repository.CategoryItemRepository;
 import org.example.mrj.repository.CategoryRepository;
-import org.example.mrj.repository.Product2Repository;
+import org.example.mrj.repository.ProductRepository;
 import org.example.mrj.util.SlugUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +40,7 @@ public class CategoryService
     private final PhotoService photoService;
     private final CategoryItemRepository categoryItemRepository;
     private final CatalogRepository catalogRepository;
-    private final Product2Repository product2Repository;
+    private final ProductRepository productRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(RequestLoggingFilter.class);
 
@@ -175,7 +175,7 @@ public class CategoryService
                                                 fromDb.setName(newItemCatalog.getName());
                                             else
                                             {
-                                                Integer countByCatalogIds = product2Repository.findCountByCatalogIds(List.of(newItemCatalog.getId()));
+                                                Integer countByCatalogIds = productRepository.findCountByCatalogIds(List.of(newItemCatalog.getId()));
                                                 if (countByCatalogIds > 0)
                                                 {
                                                     logger.info("You are trying to delete a CATALOG. But inside of this CATALOG have {} product(s). Please delete first this product(s) or replace CATALOG of this product", countByCatalogIds);
@@ -289,7 +289,7 @@ public class CategoryService
             return ResponseEntity.status(404).body(response);
         }
 
-        if (product2Repository.existsByCategoryItemId(id))
+        if (productRepository.existsByCategoryItemId(id))
         {
             logger.info("You are trying to delete a category-item. But inside of this category-item have product(s). Please delete first this product(s) or replace category-item of this product");
             throw new RuntimeException("You are trying to delete a category-item. But inside of this category-item have product(s). Please delete first this product(s) or replace category-item of this product");
@@ -297,7 +297,7 @@ public class CategoryService
 
         List<Long> catalogIds = categoryItemRepository.getCatalogIds(id);
 
-        Integer countByCatalogIds = product2Repository.findCountByCatalogIds(catalogIds);
+        Integer countByCatalogIds = productRepository.findCountByCatalogIds(catalogIds);
         if (countByCatalogIds > 0)
         {
             logger.info("You are trying to delete a category-item. But inside of this category-item's CATALOG have {} product(s). Please delete first this product(s) or replace CATALOG of this product", countByCatalogIds);

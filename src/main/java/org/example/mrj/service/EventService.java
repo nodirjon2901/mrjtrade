@@ -47,6 +47,7 @@ public class EventService
             event.setCoverPhoto(photoService.save(photo));
             event.setId(id);
             event.setSlug(id + "-" + event.getHeading());
+            event.getAbouts().forEach(i -> i.setEvent(event));
             response.setData(eventRepository.save(event));
             response.setMessage("Added");
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -137,11 +138,15 @@ public class EventService
 
                         //if both of heading and about equals null , delete them
                         if (newEventAbout.getHeading() == null && newEventAbout.getText() == null)
+                        {
+                            dbAbouts.remove(newEventAbout);
                             eventAboutRepo.deleteById(newEvent.getId());
+                        }
                     }
                 }
-                if (id == null)
+                if (id == null && newEventAbout.getHeading() != null && newEventAbout.getText() != null)
                 {
+                    newEventAbout.setEvent(fromDB);
                     dbAbouts.add(newEventAbout);
                 }
             }

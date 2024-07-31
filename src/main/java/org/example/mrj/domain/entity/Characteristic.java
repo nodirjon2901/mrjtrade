@@ -22,5 +22,5 @@ public class Characteristic extends BaseEntity
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
-    Product2 product;
+    Product product;
 }
