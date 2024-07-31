@@ -99,6 +99,7 @@ public class ProductService
             Long id = productRepository.save(new Product()).getId();
             product.setId(id);
             product.setSlug(id + "-" + SlugUtil.makeSlug(product.getName()));
+            product.getCharacteristics().forEach(i -> i.setProduct(product));
 
             response.setData(productRepository.save(product));
             response.setMessage("Product added");
@@ -196,34 +197,36 @@ public class ProductService
 
         List<Characteristic> newList = newProduct.getCharacteristics();
         //check Characteristic
-        if (newList != null)
-        {
-            if (!newList.isEmpty())
-            {
-                for (Characteristic newItem : newList)
-                {
-                    if (newItem.getId() != null)
-                    {
-                        for (Characteristic dbItem : fromDb.getCharacteristics())
-                        {
-                            if (dbItem.getId().equals(newItem.getId()))
-                            {
-                                if (newItem.getDescription() != null) dbItem.setDescription(newItem.getDescription());
-                                if (newItem.getParameterName() != null)
-                                    dbItem.setParameterName(newItem.getParameterName());
-                            }
-                        }
-                        //If id given but , both of Description and ParameterName equals null , accordingly delete this Characteristic
-                        if (newItem.getDescription() != null && newItem.getParameterName() != null)
-                            characterRepo.deleteById(newItem.getId());
 
-                    } else //If id not given accordingly this is new and add...
+        if (newList != null && !newList.isEmpty())
+        {
+            for (Characteristic newItem : newList)
+            {
+                System.err.println("characteristic.getParameterName() = " + newItem.getParameterName());
+
+                if (newItem.getId() != null)
+                {
+                    for (Characteristic dbItem : fromDb.getCharacteristics())
                     {
-                        fromDb.getCharacteristics().add(newItem);
+                        if (dbItem.getId().equals(newItem.getId()))
+                        {
+                            if (newItem.getDescription() != null) dbItem.setDescription(newItem.getDescription());
+                            if (newItem.getParameterName() != null)
+                                dbItem.setParameterName(newItem.getParameterName());
+                        }
                     }
+                    //If id given but , both of Description and ParameterName equals null , accordingly delete this Characteristic
+                    if (newItem.getDescription() != null && newItem.getParameterName() != null)
+                        characterRepo.deleteById(newItem.getId());
+
+                } else //If id not given accordingly this is new and add...
+                {
+                    newItem.setProduct(fromDb);
+                    fromDb.getCharacteristics().add(newItem);
                 }
             }
         }
+
 
         response.setData(productRepository.save(fromDb));
         response.setMessage("Updated");
