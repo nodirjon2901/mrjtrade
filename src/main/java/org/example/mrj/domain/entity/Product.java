@@ -28,10 +28,10 @@ public class Product extends BaseEntity
     @ElementCollection
     List<String> tag;
 
-    @Column(length = 500)
+    @Column(length = 5000)
     String shortDescription;
 
-    @Column(length = 1000)
+    @Column(length = 5000)
     String description;
 
     @Min(value = 0, message = "Cannot have a value less than 0.")

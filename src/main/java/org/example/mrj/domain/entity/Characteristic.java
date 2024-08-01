@@ -17,7 +17,7 @@ public class Characteristic extends BaseEntity
 {
     String parameterName;
 
-    @Column(length = 2000)
+    @Column(length = 5000)
     String description;
 
     @ManyToOne(fetch = FetchType.LAZY)

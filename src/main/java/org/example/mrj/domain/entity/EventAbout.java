@@ -22,7 +22,7 @@ public class EventAbout extends BaseEntity
 {
     String heading;
 
-    @Column(length = 1500)
+    @Column(length = 5000)
     String text;
 
     @ManyToOne(fetch = FetchType.LAZY)
