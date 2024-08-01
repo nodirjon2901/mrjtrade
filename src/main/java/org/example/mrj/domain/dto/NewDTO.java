@@ -24,17 +24,17 @@ public class NewDTO {
 
     String slug;
 
-    boolean active;
+    Boolean active;
 
     Integer orderNum;
 
     public NewDTO(New newness) {
         this.id= newness.getId();
-//        this.title = newness.getTitle();
+        this.title = newness.getHead().getTitle();
         this.date = String.valueOf(newness.getCreateDate());
-//        this.photo = newness.getPhoto();
+        this.photo = newness.getHead().getPhoto();
         this.slug = newness.getSlug();
-//        this.active = newness.isActive();
+        this.active = newness.getActive();
         this.orderNum=newness.getOrderNum();
     }
 
