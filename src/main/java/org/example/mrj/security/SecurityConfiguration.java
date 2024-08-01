@@ -77,7 +77,34 @@ public class SecurityConfiguration
                         //Event
                         new AntPathRequestMatcher("/event/all", "GET"),
                         new AntPathRequestMatcher("/event/city-list", "GET"),
-                        new AntPathRequestMatcher("/event", "GET")
+                        //Footer
+                        new AntPathRequestMatcher("/footer/get", "GET"),
+                        //Home
+                        new AntPathRequestMatcher("/", "GET"),
+                        //Navbar
+                        new AntPathRequestMatcher("/navbar/get", "GET"),
+                        //News Controller
+                        new AntPathRequestMatcher("/news/get/*", "GET"),
+                        new AntPathRequestMatcher("/news/get-all", "GET"),
+                        new AntPathRequestMatcher("/news/get-all-other/*", "GET"),
+                        //Partner
+                        new AntPathRequestMatcher("/partner/get/*", "GET"),
+                        new AntPathRequestMatcher("/partner/get-all", "GET"),
+                        new AntPathRequestMatcher("/partner/get-all-partner-name", "GET"),
+                        new AntPathRequestMatcher("/partner/get-all-partner", "GET"),
+                        new AntPathRequestMatcher("/partner/get-others/*", "GET"),
+                        new AntPathRequestMatcher("/partner/header/get", "GET"),
+                        //Photo
+                        new AntPathRequestMatcher("/photo/*", "GET"),
+                        //Product
+                        new AntPathRequestMatcher("/product/v2/*", "GET"),
+                        new AntPathRequestMatcher("/product/v2/all", "GET"),
+                        //Schema Work
+                        new AntPathRequestMatcher("/scheme-work/get/*", "GET"),
+                        new AntPathRequestMatcher("/scheme-work/get-all", "GET"),
+                        //Search
+                        new AntPathRequestMatcher("/search", "GET"),
+
                 };
     }
 

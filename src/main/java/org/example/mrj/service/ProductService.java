@@ -7,7 +7,7 @@ import org.example.mrj.controller.RequestLoggingFilter;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.dto.ProductDTO;
 import org.example.mrj.domain.entity.*;
-import org.example.mrj.exception.IllegalCatalogCategoryItemException;
+import org.example.mrj.exception.CategoryException;
 import org.example.mrj.exception.NotFoundException;
 import org.example.mrj.repository.*;
 import org.example.mrj.util.SlugUtil;
@@ -46,7 +46,7 @@ public class ProductService
             if (product.getCatalog() != null && product.getCategoryItem() != null)
             {
                 logger.info("Product belongs to either catalog or CategoryItem, not both !!!");
-                throw new RuntimeException("Product belongs to either catalog or CategoryItem, not both !!!");
+                throw new CategoryException("Product belongs to either catalog or CategoryItem, not both !!!");
             }
 //            if (mainPhoto != null) product.setMainPhoto(photoService.save(mainPhoto));
             product.setGallery(new ArrayList<>());
@@ -63,7 +63,7 @@ public class ProductService
             } else
             {
                 logger.info("Partner not given");
-                throw new RuntimeException("Partner not given");
+                throw new NotFoundException("Partner not given");
             }
 
             if (product.getCatalog() != null)
@@ -91,7 +91,7 @@ public class ProductService
                 if (!catalogIds.isEmpty())
                 {
                     logger.info("You send CategoryItem , But this category have {} catalog(s) ,If category-item have catalog(s). You can set only catalog for product", catalogIds.size());
-                    throw new IllegalCatalogCategoryItemException(String.format("You send CategoryItem , But this category have %s catalog(s) ,If category-item have catalog(s). You can set only catalog for product", catalogIds.size()));
+                    throw new CategoryException(String.format("You send CategoryItem , But this category have %s catalog(s) ,If category-item have catalog(s). You can set only catalog for product", catalogIds.size()));
                 }
 
             }
@@ -167,7 +167,7 @@ public class ProductService
         if (newProduct.getCatalog() != null && newProduct.getCategoryItem() != null)
         {
             logger.info("Product belong only catalog-id or CategoryItem-id , Please send either of catalog or categoryItem");
-            throw new IllegalCatalogCategoryItemException("Product belong only catalog-id or CategoryItem-id , Please send either of catalog or categoryItem");
+            throw new CategoryException("Product belong only catalog-id or CategoryItem-id , Please send either of catalog or categoryItem");
         }
 
         if (newProduct.getCatalog() != null && newProduct.getCatalog().getId() != null)
@@ -188,7 +188,7 @@ public class ProductService
             if (!catalogIds.isEmpty())
             {
                 logger.info("You send CategoryItem , But this category have {} catalog(s) ,If category-item have catalog(s). You can set only catalog for product", catalogIds.size());
-                throw new IllegalCatalogCategoryItemException(String.format("You send CategoryItem , But this category have %s catalog(s) ,If category-item have catalog(s). You can set only catalog for product", catalogIds.size()));
+                throw new CategoryException(String.format("You send CategoryItem , But this category have %s catalog(s) ,If category-item have catalog(s). You can set only catalog for product", catalogIds.size()));
             }
 
             fromDb.setCatalog(null);
@@ -250,7 +250,7 @@ public class ProductService
 
         if (categoryItemId != null && catalogId != null)
         {
-            throw new RuntimeException("Filter only for either of category-id or catalog-id, not both!!!");
+            throw new CategoryException("Filter only for either of category-id or catalog-id, not both!!!");
         }
 
         if (categoryItemId == null && catalogId == null)

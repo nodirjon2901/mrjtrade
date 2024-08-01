@@ -14,8 +14,8 @@ public class JwtTokenService
 {
     private final UserRepository userRepository;
 
-//    @Value("${jwt.token.secretKey}")
-    private final String secretKey="jYf4$tBvfUxqG#{cb7hZsTBdhBVG0YIq";
+    @Value("${jwt.token.secretKey}")
+    private String secretKey;
 
     @Value("${jwt.token.expireDateInMilliSeconds}")
     private Long expireDate;
@@ -73,7 +73,7 @@ public class JwtTokenService
             return userRepository.findByUsername(subject).orElseThrow(RuntimeException::new);
         } catch (Exception e)
         {
-            throw new RuntimeException("Authorization failed. Please login again");
+            throw new AuthorizationFailedException("Authorization failed. Please login again");
         }
     }
 

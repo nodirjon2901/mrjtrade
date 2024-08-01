@@ -8,6 +8,7 @@ import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.dto.EventDTO;
 import org.example.mrj.domain.entity.Event;
 import org.example.mrj.domain.entity.EventAbout;
+import org.example.mrj.exception.JsonException;
 import org.example.mrj.exception.NotFoundException;
 import org.example.mrj.repository.EventAboutRepository;
 import org.example.mrj.repository.EventRepository;
@@ -53,7 +54,7 @@ public class EventService
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (JsonProcessingException e)
         {
-            throw new RuntimeException("Failed to parse json: " + e.getMessage());
+            throw new JsonException("Failed to parse json: " + e.getMessage());
         }
     }
 
