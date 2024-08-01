@@ -139,8 +139,7 @@ public class EventService
                         //if both of heading and about equals null , delete them
                         if (newEventAbout.getHeading() == null && newEventAbout.getText() == null)
                         {
-                            dbAbouts.remove(newEventAbout);
-                            eventAboutRepo.deleteById(newEvent.getId());
+                            eventAboutRepo.delete(id);
                         }
                     }
                 }

@@ -25,7 +25,7 @@ public class EventAbout extends BaseEntity
     @Column(length = 5000)
     String text;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JsonIgnore
     Event event;
 
