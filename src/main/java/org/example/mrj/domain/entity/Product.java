@@ -68,6 +68,8 @@ public class Product extends BaseEntity
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     List<Photo> gallery;
 
+    Boolean professional;
+
     @PostPersist
     private void setIdToCharacteristics()
     {

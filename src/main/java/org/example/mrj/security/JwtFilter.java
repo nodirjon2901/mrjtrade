@@ -41,10 +41,10 @@ public class JwtFilter extends OncePerRequestFilter
                     usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
                 }
-            }else
-            {
-                throw new  AuthorizationFailedException("Authorization failed");
             }
+//            else
+//                throw new  AuthorizationFailedException("Authorization failed");
+
         }
         doFilter(request, response, filterChain);
     }
