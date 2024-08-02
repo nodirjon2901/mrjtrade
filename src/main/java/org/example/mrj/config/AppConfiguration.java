@@ -33,7 +33,7 @@ public class AppConfiguration
         };
     }
 
-    @Bean
+//    @Bean
     public CorsConfigurationSource corsConfigurationSource()
     {
         org.springframework.web.cors.CorsConfiguration configuration = new CorsConfiguration();
