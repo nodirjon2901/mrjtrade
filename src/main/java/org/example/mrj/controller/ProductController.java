@@ -41,9 +41,10 @@ public class ProductController
     public ResponseEntity<ApiResponse<List<ProductDTO>>> getProduct(
             @RequestParam(value = "category-id", required = false) Long categoryId,
             @RequestParam(value = "catalog-id", required = false) Long catalogId,
-            @RequestParam(value = "tag", required = false) String tag)
+            @RequestParam(value = "tag", required = false) String tag,
+            @RequestParam(value = "professional", required = false) Boolean professional)
     {
-        return productService.getAll(categoryId, catalogId, tag);
+        return productService.getAll(categoryId, catalogId, tag, professional);
     }
 
 

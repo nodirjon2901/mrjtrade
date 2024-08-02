@@ -26,4 +26,8 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     @Query(value = "SELECT COUNT(id) FROM product WHERE catalog_id IN :catalogIds", nativeQuery = true)
     Integer findCountByCatalogIds(List<Long> catalogIds);
+
+    List<Product> findByProfessional(boolean professional);
+
+    List<Product> findByTagContainingAndProfessional(String tag, boolean professional);
 }

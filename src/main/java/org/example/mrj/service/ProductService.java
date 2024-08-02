@@ -6,7 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.example.mrj.controller.RequestLoggingFilter;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.dto.ProductDTO;
-import org.example.mrj.domain.entity.*;
+import org.example.mrj.domain.entity.Characteristic;
+import org.example.mrj.domain.entity.Product;
 import org.example.mrj.exception.CategoryException;
 import org.example.mrj.exception.NotFoundException;
 import org.example.mrj.repository.*;
@@ -49,13 +50,10 @@ public class ProductService
                 throw new CategoryException("Product belongs to either catalog or CategoryItem, not both !!!");
             }
 //            if (mainPhoto != null) product.setMainPhoto(photoService.save(mainPhoto));
-            product.setGallery(new ArrayList<>());
-            gallery.forEach(i -> product.getGallery().add(photoService.save(i)));
 
             if (product.getPartner() != null)
             {
-                Optional<Partner> partner = partnerRepository.findById(product.getPartner().getId());
-                if (partner.isEmpty())
+                if (!partnerRepository.existsById(product.getPartner().getId()))
                 {
                     logger.info("Partner not found by id: {}", product.getPartner().getId());
                     throw new NotFoundException("Partner not found by id: " + product.getPartner().getId());
@@ -68,8 +66,7 @@ public class ProductService
 
             if (product.getCatalog() != null)
             {
-                Optional<Catalog> catalog = catalogRepository.findById(product.getCatalog().getId());
-                if (catalog.isEmpty())
+                if (!catalogRepository.existsById(product.getCatalog().getId()))
                 {
                     logger.info("Catalog not found by id: {}", product.getCatalog().getId());
                     throw new NotFoundException("Catalog not found by id: " + product.getCatalog().getId());
@@ -79,15 +76,14 @@ public class ProductService
             if (product.getCategoryItem() != null)
             {
 //                System.err.println("product2.getCategoryItem() = " + product.getCategoryItem());
-                Optional<CategoryItem> categoryItem = categoryItemRepository.findById(product.getCategoryItem().getId());
 
-                if (categoryItem.isEmpty())
+                if (!categoryItemRepository.existsById(product.getCategoryItem().getId()))
                 {
                     logger.info("CategoryItem not found by id: {}", product.getCategoryItem().getId());
                     throw new NotFoundException("CategoryItem not found by id: " + product.getCategoryItem().getId());
                 }
 
-                List<Long> catalogIds = categoryItemRepository.getCatalogIds(categoryItem.get().getId());
+                List<Long> catalogIds = categoryItemRepository.getCatalogIds(product.getCategoryItem().getId());
                 if (!catalogIds.isEmpty())
                 {
                     logger.info("You send CategoryItem , But this category have {} catalog(s) ,If category-item have catalog(s). You can set only catalog for product", catalogIds.size());
@@ -95,6 +91,9 @@ public class ProductService
                 }
 
             }
+
+            product.setGallery(new ArrayList<>());
+            gallery.forEach(i -> product.getGallery().add(photoService.save(i)));
 
             Long id = productRepository.save(new Product()).getId();
             product.setId(id);
@@ -156,6 +155,9 @@ public class ProductService
         if (newProduct.getConditions() != null)
             fromDb.setConditions(newProduct.getConditions());
 
+        if (newProduct.getProfessional() != null)
+            fromDb.setProfessional(newProduct.getProfessional());
+
         if (newProduct.getPartner() != null && newProduct.getPartner().getId() != null)
         {
             if (!partnerRepository.existsById(newProduct.getPartner().getId()))
@@ -197,7 +199,6 @@ public class ProductService
 
         List<Characteristic> newList = newProduct.getCharacteristics();
         //check Characteristic
-
         if (newList != null && !newList.isEmpty())
         {
             for (Characteristic newItem : newList)
@@ -243,7 +244,7 @@ public class ProductService
         return ResponseEntity.ok(response);
     }
 
-    public ResponseEntity<ApiResponse<List<ProductDTO>>> getAll(Long categoryItemId, Long catalogId, String tag)
+    public ResponseEntity<ApiResponse<List<ProductDTO>>> getAll(Long categoryItemId, Long catalogId, String tag, Boolean professional)
     {
         ApiResponse<List<ProductDTO>> response = new ApiResponse<>();
         List<Product> products = new ArrayList<>();
@@ -255,10 +256,15 @@ public class ProductService
 
         if (categoryItemId == null && catalogId == null)
         {
-            if (tag == null)
+            if (tag == null && professional == null)
                 products = productRepository.findAll();
-            else
+            else if (professional == null)
                 products = productRepository.findByTagContaining(tag);
+            else if (tag == null)
+                products = productRepository.findByProfessional(professional);
+            else
+                products = productRepository.findByTagContainingAndProfessional(tag, professional);
+
         } else if (catalogId != null)
         {
             if (tag == null)
