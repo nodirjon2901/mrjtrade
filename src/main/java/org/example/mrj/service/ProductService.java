@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.mrj.controller.RequestLoggingFilter;
 import org.example.mrj.domain.dto.ApiResponse;
 import org.example.mrj.domain.dto.ProductDTO;
+import org.example.mrj.domain.entity.CategoryItem;
 import org.example.mrj.domain.entity.Characteristic;
 import org.example.mrj.domain.entity.Product;
 import org.example.mrj.exception.CategoryException;
@@ -110,13 +111,35 @@ public class ProductService
         }
     }
 
-    public ResponseEntity<ApiResponse<Product>> get(String slug)
+    public ResponseEntity<ApiResponse<?>> get(String slug, boolean similar)
     {
-        ApiResponse<Product> response = new ApiResponse<>();
         Optional<Product> bySlug = productRepository.findBySlug(slug);
         if (bySlug.isEmpty())
             throw new NotFoundException("Product not found by slug: " + slug);
-        response.setData(bySlug.get());
+        Product product = bySlug.get();
+
+        if (similar)
+        {
+            ApiResponse<List<ProductDTO>> response = new ApiResponse<>();
+
+            if (product.getCatalog() != null && product.getCatalog().getId() != null)
+            {
+                CategoryItem categoryItem = product.getCatalog().getCategoryItem();
+                List<Product> productList = productRepository.findByCategoryItemId(categoryItem.getId());
+
+                response.setData(new ArrayList<>());
+                productList.removeIf(i -> i.getId().equals(product.getId()));
+                productList.forEach(i -> response.getData().add(new ProductDTO(i)));
+                response.setMessage("Similar product");
+                return ResponseEntity.ok(response);
+            }
+
+
+            response.setData(new ArrayList<>());
+        }
+
+        ApiResponse<Product> response = new ApiResponse<>();
+        response.setData(product);
         response.setMessage("Found");
         return ResponseEntity.ok(response);
     }

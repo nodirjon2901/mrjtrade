@@ -26,15 +26,15 @@ public class ProductController
 //            @RequestParam(value = "main-photo", required = false) MultipartFile mainPhoto,
             @RequestParam(value = "gallery") List<MultipartFile> gallery)
     {
-        return productService.
-                add(jsonData, gallery);
+        return productService.add(jsonData, gallery);
     }
 
     @GetMapping("/{slug}")
-    public ResponseEntity<ApiResponse<Product>> getProduct(
-            @PathVariable("slug") String slug)
+    public ResponseEntity<ApiResponse<?>> getProduct(
+            @PathVariable("slug") String slug,
+            @RequestParam(value = "similar", required = false, defaultValue = "false") boolean similar)
     {
-        return productService.get(slug);
+        return productService.get(slug, similar);
     }
 
     @GetMapping("/all")
