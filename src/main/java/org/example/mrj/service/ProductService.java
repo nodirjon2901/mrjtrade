@@ -132,10 +132,26 @@ public class ProductService
                 productList.forEach(i -> response.getData().add(new ProductDTO(i)));
                 response.setMessage("Similar product");
                 return ResponseEntity.ok(response);
+            } else
+            {
+                List<Long> catalogIds = categoryItemRepository.getCatalogIds(product.getCategoryItem().getId());
+
+                List<Product> productList;
+                if (!catalogIds.isEmpty())
+                {
+                    productList = productRepository.findByCatalogIds(catalogIds);
+                } else
+                {
+                    productList = productRepository.findByCategoryItemId(product.getCategoryItem().getId());
+                }
+
+                response.setData(new ArrayList<>());
+                productList.removeIf(i -> i.getId().equals(product.getId()));
+                productList.forEach(i -> response.getData().add(new ProductDTO(i)));
+                response.setMessage("Similar product");
+                return ResponseEntity.ok(response);
             }
 
-
-            response.setData(new ArrayList<>());
         }
 
         ApiResponse<Product> response = new ApiResponse<>();
